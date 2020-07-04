@@ -118,9 +118,6 @@ class BuckinghamPi:
             self.M[row, :] = vect
 
         self.M = self.M.transpose()
-        # augment M with zeros to make it a square matrix
-        for _ in range(self.num_variable-self.num_physical_dimensions):
-            self.M = np.vstack([self.M,np.zeros_like(self.M[0,:])])
 
     def __create_symbolic_variables(self):
         for var_name in self.__variables.keys():
