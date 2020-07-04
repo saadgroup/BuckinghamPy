@@ -1,0 +1,5 @@
+jupyter contrib nbextension install --user
+jupyter nbextension enable --py widgetsnbextension
+jupyter labextension install @jupyter-widgets/jupyterlab-manager@0.38
+jupyter nbextension enable init_cell/main
+jupyter trust examples.ipynb
