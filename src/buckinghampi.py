@@ -1,11 +1,11 @@
 """buckinghampi.py: a symbolic module that generates the pi terms based on some variables by applying the pi-theorem."""
 
 __author__ = "Mokbel Karam"
-__copyright__ = "Copyright (c) 2019, Mokbel Karam"
+__copyright__ = "Copyright (c) 2020, Mokbel Karam"
 
 __credits__ = ["University of Utah Department of Chemical Engineering"]
-__license__ = "MIT"
-__version__ = "1.0.0"
+__license__ = "Apache 2.0"
+__version__ = "0.1.2"
 __maintainer__ = "Mokbel Karam"
 __email__ = "mokbel.karam@chemeng.utah.edu"
 __status__ = "Production"
@@ -29,7 +29,7 @@ class BuckinghamPi:
         self.__all_physical_dimensions = ('a','k','t','l','m','cd','mol')
         physical_dimensions_list = [x.lower() for x in physical_dimensions.split(sep=sep)]
         if not(all(x in self.__all_physical_dimensions for x in physical_dimensions_list)):
-            raise Exception
+            raise Exception('physical_dimensions has to be a subset of the all physical dimensions {}'.format(self.__all_physical_dimensions))
 
         self.__physical_dimensions = {v:sp.symbols(v) for v  in physical_dimensions_list}
         self.__physical_dimensions_list = [self.__physical_dimensions[key] for key in self.__physical_dimensions.keys()]
@@ -65,9 +65,9 @@ class BuckinghamPi:
     def __parse_expression(self,string:str):
         expr = parse_expr(string.lower(),local_dict=self.physical_dimensions,global_dict={"Integer":sp.Integer})
         if not (isinstance(expr,Mul) or isinstance(expr,Pow) or isinstance(expr,sp.Symbol)):
-            raise Exception
+            raise Exception('expression of type {} is not of the accepted types ({}, {}, {})'.format(type(expr), Mul, Pow, sp.Symbol))
         if expr.as_coeff_Mul()[0] != 1:
-            raise Exception
+            raise Exception('cannot have coefficients, {}, that multiply the expression'.format(expr.as_coeff_Mul()[0]))
 
         return expr
 
@@ -107,7 +107,7 @@ class BuckinghamPi:
     def __create_M(self):
         self.num_variable = len(list(self.__variables.keys()))
         if self.num_variable < self.num_physical_dimensions:
-            raise Exception
+            raise Exception('The number of variables has to be greater than the number of physical dimensions.')
 
         self.M = np.zeros(shape=(self.num_variable, self.num_physical_dimensions))
         # fill M
