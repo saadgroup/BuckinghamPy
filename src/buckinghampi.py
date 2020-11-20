@@ -15,7 +15,7 @@ from sympy.parsing.sympy_parser import parse_expr
 from sympy.core.mul import Mul, Pow
 from sympy.core.expr import Expr
 import numpy as np
-from itertools import permutations
+from itertools import combinations
 from tqdm import tqdm
 
 
@@ -39,6 +39,7 @@ class BuckinghamPi:
         self.__idx_from_var = {}
         self.__variables={}
         self.__sym_variables={}
+        self.__flagged_var = {'var_name':None, 'var_index':None,'flaged':False}
 
     @property
     def physical_dimensions(self):
@@ -89,7 +90,7 @@ class BuckinghamPi:
 
         return vect
 
-    def add_variable(self, name:str, expression:str):
+    def add_variable(self, name:str, expression:str, select=False):
         '''
         Add variables to use for the pi-theorem
         :param name: (string) name of the variable to be added
@@ -101,7 +102,10 @@ class BuckinghamPi:
         var_idx = len(list(self.__variables.keys()))-1
         self.__var_from_idx[var_idx]= name
         self.__idx_from_var[name] = var_idx
-
+        if select:
+            self.__flagged_var['var_name'] = name
+            self.__flagged_var['var_index'] = var_idx
+            self.__flagged_var['flaged'] = True
         return True
 
     def __create_M(self):
@@ -124,34 +128,55 @@ class BuckinghamPi:
             self.__sym_variables[var_name] = sp.symbols(var_name)
 
     def __solve_null_spaces(self):
+
+        assert self.__flagged_var['flaged']==True, " you need to select a variable"
+
         n = self.num_variable
-        column_permutation_index = list(permutations(range(n), n))
+        m = self.num_physical_dimensions
 
+        original_indicies = list(range(0, n))
+        all_idx = original_indicies.copy()
+        if self.__flagged_var['flaged']:
+            del all_idx[self.__flagged_var['var_index']]
+
+        # print(all_idx)
+        all_combs = list(combinations(all_idx,m))
+        # print(all_combs)
+
+        num_det_0 = 0
         self.__null_spaces = []
-        temp_order = self.__var_from_idx.copy()
-        for perm in tqdm(column_permutation_index):
-            inv_perm = perm[::-1]
-            A = self.M.copy()
-            A[:, perm] = A[:, inv_perm]
+        for comb in tqdm(all_combs):
+            temp_comb = list(comb).copy()
+            extra_vars = [i for i in original_indicies if i not in temp_comb ]
+            b_ns = []
+            for extra_var in extra_vars:
+                new_order = {}
+                temp_comb.append(extra_var)
+                A = self.M[:,temp_comb].copy()
+                for num,var_idx in enumerate(temp_comb):
+                    new_order[num] =  self.__var_from_idx[var_idx]
+                B = sp.Matrix(A)
+                test_mat = B[:,:m]
+                if sp.det(test_mat) !=0:
+                    ns = B.nullspace()[0]
+                    b_ns.append({'order': new_order, 'power': ns.tolist()})
 
-            for perm_idx, inv_perm_idx in zip(perm,inv_perm):
-                temp_order[perm_idx] = self.__var_from_idx[inv_perm_idx]
-                temp_order[inv_perm_idx] = self.__var_from_idx[perm_idx]
-
-            B = sp.Matrix(A)
-            b_ns = B.nullspace()
-            if b_ns not in self.__null_spaces:
-                self.__null_spaces.append({'order': temp_order, 'power': b_ns})
-            temp_order = self.__var_from_idx.copy()
+                else:
+                    num_det_0+=1
+                temp_comb = list(comb).copy()
+            self.__null_spaces.append(b_ns)
+        # print("num of det 0 : ",num_det_0)
 
     def __construct_symbolic_pi_terms(self):
         self.__allpiterms = []
         for space in self.__null_spaces:
             spacepiterms = []
-            for power in space['power']:
+            for term in space:
                 expr = 1
-                for idx in space['order'].keys():
-                    expr *= self.__sym_variables[space['order'][idx]] ** sp.nsimplify(sp.Rational(power[idx]))
+                idx = 0
+                for order,power in zip(term['order'].keys(),term['power']):
+                    expr *= self.__sym_variables[term['order'][order]] ** sp.nsimplify(sp.Rational(power[0]))
+                    idx += 1
                 spacepiterms.append(expr)
             # check for already existing pi terms in previous null-spaces
             already_exists = False
