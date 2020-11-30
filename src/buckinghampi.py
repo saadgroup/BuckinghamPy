@@ -16,8 +16,6 @@ from sympy.core.mul import Mul, Pow
 from sympy.core.expr import Expr
 import numpy as np
 from itertools import combinations
-from tqdm import tqdm
-
 
 class BuckinghamPi:
     def __init__(self, physical_dimensions:str,sep=' '):
@@ -39,7 +37,9 @@ class BuckinghamPi:
         self.__idx_from_var = {}
         self.__variables={}
         self.__sym_variables={}
-        self.__flagged_var = {'var_name':None, 'var_index':None,'flaged':False}
+        self.__flagged_var = {'var_name':None, 'var_index':None,'selected':False}
+
+        self.__null_spaces = []
 
     @property
     def physical_dimensions(self):
@@ -102,10 +102,13 @@ class BuckinghamPi:
         var_idx = len(list(self.__variables.keys()))-1
         self.__var_from_idx[var_idx]= name
         self.__idx_from_var[name] = var_idx
-        if select:
+        if select and (self.__flagged_var['selected']==False):
             self.__flagged_var['var_name'] = name
             self.__flagged_var['var_index'] = var_idx
-            self.__flagged_var['flaged'] = True
+            self.__flagged_var['selected'] = True
+        elif select and (self.__flagged_var['selected']==True):
+            raise Exception("you cannot select more than one variable at a time.")
+
         return True
 
     def __create_M(self):
@@ -128,15 +131,27 @@ class BuckinghamPi:
             self.__sym_variables[var_name] = sp.symbols(var_name)
 
     def __solve_null_spaces(self):
+        if self.__flagged_var['selected']==True:
+            self.__solve_null_spaces_for_flagged_variables()
 
-        assert self.__flagged_var['flaged']==True, " you need to select a variable"
+        else:
+            for idx in self.__var_from_idx.keys():
+                self.__flagged_var['var_name'] = self.__var_from_idx[idx]
+                self.__flagged_var['var_index'] = idx
+                self.__flagged_var['selected'] = True
+
+                self.__solve_null_spaces_for_flagged_variables()
+
+    def __solve_null_spaces_for_flagged_variables(self):
+
+        assert self.__flagged_var['selected']==True, " you need to select a variable"
 
         n = self.num_variable
         m = self.num_physical_dimensions
 
         original_indicies = list(range(0, n))
         all_idx = original_indicies.copy()
-        if self.__flagged_var['flaged']:
+        if self.__flagged_var['selected']:
             del all_idx[self.__flagged_var['var_index']]
 
         # print(all_idx)
@@ -144,8 +159,7 @@ class BuckinghamPi:
         # print(all_combs)
 
         num_det_0 = 0
-        self.__null_spaces = []
-        for comb in tqdm(all_combs):
+        for comb in all_combs:
             temp_comb = list(comb).copy()
             extra_vars = [i for i in original_indicies if i not in temp_comb ]
             b_ns = []
