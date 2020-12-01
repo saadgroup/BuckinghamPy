@@ -64,6 +64,9 @@ class BuckinghamPi:
 
 
     def __parse_expression(self,string:str):
+        if '^' in string:
+            # convert the xor operator to power operator
+            string = string.replace('^','**')
         expr = parse_expr(string.lower(),local_dict=self.physical_dimensions,global_dict={"Integer":sp.Integer})
         if not (isinstance(expr,Mul) or isinstance(expr,Pow) or isinstance(expr,sp.Symbol)):
             raise Exception('expression of type {} is not of the accepted types ({}, {}, {})'.format(type(expr), Mul, Pow, sp.Symbol))
