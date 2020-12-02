@@ -18,20 +18,15 @@ import numpy as np
 from itertools import combinations
 
 class BuckinghamPi:
-    def __init__(self, physical_dimensions:str,sep=' '):
+    def __init__(self):
         '''
         Construct an instance of the BuckinghamPi theorem
         :param physical_dimensions: (string) of the physical dimensions used for this instance. ex: physical_dimensions='m l t'
         :param sep: (string) used to separate the physical_dimensions, by default it is a white space ' '
         '''
         self.__all_physical_dimensions = ('a','k','t','l','m','cd','mol')
-        physical_dimensions_list = [x.lower() for x in physical_dimensions.split(sep=sep)]
-        if not(all(x in self.__all_physical_dimensions for x in physical_dimensions_list)):
-            raise Exception('physical_dimensions has to be a subset of the all physical dimensions {}'.format(self.__all_physical_dimensions))
-
-        self.__physical_dimensions = {v:sp.symbols(v) for v  in physical_dimensions_list}
+        self.__physical_dimensions = {v:sp.symbols(v) for v  in self.__all_physical_dimensions}
         self.__physical_dimensions_list = [self.__physical_dimensions[key] for key in self.__physical_dimensions.keys()]
-        self.num_physical_dimensions = len(self.__physical_dimensions_list)
 
         self.__var_from_idx={}
         self.__idx_from_var = {}
@@ -40,6 +35,8 @@ class BuckinghamPi:
         self.__flagged_var = {'var_name':None, 'var_index':None,'selected':False}
 
         self.__null_spaces = []
+
+        self.__syms_used = [] # list of physical dimensions symbols
 
     @property
     def physical_dimensions(self):
@@ -73,22 +70,29 @@ class BuckinghamPi:
         if expr.as_coeff_Mul()[0] != 1:
             raise Exception('cannot have coefficients, {}, that multiply the expression'.format(expr.as_coeff_Mul()[0]))
 
+        #extract the physical dimensions from the units expressions
+        used_symbols = list(expr.free_symbols)
+        for sym in used_symbols:
+            if not sym in self.__syms_used:
+                self.__syms_used.append(sym)
+
         return expr
 
     def __extract_exponents(self,expr:Expr):
-        vect = np.zeros(self.num_physical_dimensions)
+        num_physical_dimensions = len(self.__syms_used)
+        vect = np.zeros(num_physical_dimensions)
         args = list(expr.args) if list(expr.args) else [expr]
         # print(args)
         if isinstance(expr, Pow):
-            vect[self.__physical_dimensions_list.index(args[0])] = int(args[1])
+            vect[self.__syms_used.index(args[0])] = int(args[1])
         else:
             for e in args:
                 if isinstance(expr, sp.Symbol):
-                    vect[self.__physical_dimensions_list.index(e)]= int(1)
+                    vect[self.__syms_used.index(e)]= int(1)
                     # print('({}, {})'.format(e, 1))
                 else:
                     var, exponent= e.as_base_exp()
-                    vect[self.__physical_dimensions_list.index(var)] = int(exponent)
+                    vect[self.__syms_used.index(var)] = int(exponent)
                     # print('({}, {})'.format(var, exponent))
 
         return vect
@@ -116,10 +120,11 @@ class BuckinghamPi:
 
     def __create_M(self):
         self.num_variable = len(list(self.__variables.keys()))
-        if self.num_variable < self.num_physical_dimensions:
+        num_physical_dimensions = len(self.__syms_used)
+        if self.num_variable < num_physical_dimensions:
             raise Exception('The number of variables has to be greater than the number of physical dimensions.')
 
-        self.M = np.zeros(shape=(self.num_variable, self.num_physical_dimensions))
+        self.M = np.zeros(shape=(self.num_variable, num_physical_dimensions))
         # fill M
         for var_name in self.__variables.keys():
             expr = self.__variables[var_name]
@@ -150,7 +155,7 @@ class BuckinghamPi:
         assert self.__flagged_var['selected']==True, " you need to select a variable"
 
         n = self.num_variable
-        m = self.num_physical_dimensions
+        m = len(self.__syms_used)
 
         original_indicies = list(range(0, n))
         all_idx = original_indicies.copy()

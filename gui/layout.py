@@ -37,32 +37,7 @@ class PlotStyling(object):
             style=self.style
         )
 
-        items_layout = Layout(width='auto')  # override the default width of the button to 'auto' to let the button grow
-        self.mass = widgets.Checkbox(value=False,description='M',style=self.style,layout=items_layout)
-        self.length = widgets.Checkbox(value=False, description='L', style=self.style,layout=items_layout)
-        self.time = widgets.Checkbox(value=False, description='T', style=self.style,layout=items_layout)
-        self.temp = widgets.Checkbox(value=False, description='K', style=self.style,layout=items_layout)
-        self.mol = widgets.Checkbox(value=False, description='Mol', style=self.style,layout=items_layout)
-        self.amp = widgets.Checkbox(value=False, description='A', style=self.style,layout=items_layout)
-        self.cd = widgets.Checkbox(value=False, description='Cd', style=self.style,layout=items_layout)
-
-        box_layout = Layout(display='flex',
-                            flex_flow='row',
-                            align_items='stretch',
-                            # border='solid',
-                            width='40%')
-        self.fundamental_dims = [widgets.Label('Fundamental Dimensions:'),self.mass,self.length,self.time,self.temp,self.mol,self.amp,self.cd]
-        box = Box(children=self.fundamental_dims, layout=box_layout)
-
-
-        self.top_panel= \
-            VBox(children=[
-                HBox(children=[
-                   self.num_var,
-                ]),
-                box
-            ],
-            )
+        self.top_panel=HBox(children=[self.num_var])
         self.panels['top_panel']= self.top_panel
 
     def create_variable_Hbox(self,idx):
@@ -188,17 +163,10 @@ class PlotStyling(object):
 
             self.data['vars'][var_name] = {'units':var_units,'select':var_select}
 
-        fundamental_dims = [dim.description for dim in self.fundamental_dims if dim.value ==True ]
-        self.data['fund_dims'] = fundamental_dims
-
     def generate_solution(self):
-        separator = ' '
-        physical_dims = separator.join(self.data['fund_dims'])
-        problem = BuckinghamPi(physical_dimensions=physical_dims)
-
+        problem = BuckinghamPi()
         for varname in self.data['vars'].keys():
             problem.add_variable(name=varname,expression=self.data['vars'][varname]['units'],select=self.data['vars'][varname]['select'])
-
         problem.generate_pi_terms()
         self.data['sol'] = problem.pi_terms
 
