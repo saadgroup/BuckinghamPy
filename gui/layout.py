@@ -21,7 +21,7 @@ class PlotStyling(object):
         self.continuousUpdate=False
         self.style = {'description_width': 'initial'}
         self.txt_box_layout = Layout(width='auto', height='32px')
-
+        self.children_vbox = [] # variable list
         self.panels={}
         self.stylingTab()
 
@@ -113,11 +113,27 @@ class PlotStyling(object):
 
 
     def create_bottom_panel(self,change):
+        if len(self.children_vbox):
+            del self.children_vbox[-1]
+        list_var_num = len(self.children_vbox)
+        print("children v box list",self.children_vbox)
+        print("list variable number ",list_var_num)
+        print("variable number ",self.num_var.value)
+        counter = list_var_num
+        while counter < self.num_var.value:
+            counter += 1
+            self.create_variable_Hbox(counter)
+            self.children_vbox.append(getattr(self, 'var_{}'.format(counter)))
 
-        children_vbox = []
-        for idx in range(1, self.num_var.value+1):
-            self.create_variable_Hbox(idx)
-            children_vbox.append(getattr(self, 'var_{}'.format(idx)))
+
+        counter = list_var_num
+        while counter > self.num_var.value:
+            del self.children_vbox[-1]
+            delattr(self,'var_{}'.format(counter))
+            delattr(self, 'var_name_{}'.format(counter))
+            delattr(self, 'var_units_{}'.format(counter))
+            delattr(self,'var_select_{}'.format(counter))
+            counter -= 1
 
         self.generate_button_widget = widgets.Button(
                                                 description='Generate',
@@ -127,10 +143,12 @@ class PlotStyling(object):
                                                 icon='check'
                                             )
 
-        children_vbox.append(self.generate_button_widget)
+        self.children_vbox.append(self.generate_button_widget)
 
         self.bottom_panel = \
-            VBox(children=children_vbox)
+            VBox(children=self.children_vbox)
+
+        self.uncheck_chk_boxes()
 
         self.panels['bottom_panel'] = self.bottom_panel
         clear_output()
@@ -144,7 +162,13 @@ class PlotStyling(object):
 
         self.generate_button_widget.on_click(self.generate_pressed)
 
-    def var_checkboxes_enable(self,change):
+    def uncheck_chk_boxes(self):
+        all_chk_boxes = [getattr(self, 'var_select_{}'.format(idx)) for idx in range(1, self.num_var.value + 1)]
+        chk_boxes_vals = [chk_box.value for chk_box in all_chk_boxes]
+        for idx, chk_box in enumerate(all_chk_boxes):
+            chk_box.value = False
+
+    def change_visibility_select_box(self):
         all_chk_boxes = [getattr(self, 'var_select_{}'.format(idx)) for idx in range(1,self.num_var.value+1)]
         chk_boxes_vals = [chk_box.value for chk_box in all_chk_boxes]
         try:
@@ -156,6 +180,9 @@ class PlotStyling(object):
         except:
             for idx, chk_box in enumerate(all_chk_boxes):
                 chk_box.disabled = False
+
+    def var_checkboxes_enable(self,change):
+        self.change_visibility_select_box()
 
     def on_change(self):
         self.num_var.observe(self.create_bottom_panel,names='value')
