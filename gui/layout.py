@@ -1,19 +1,7 @@
 from src.buckinghampi import BuckinghamPi,sp
 import ipywidgets as widgets
 from ipywidgets import HBox, VBox, Layout, Box
-from IPython.display import display, HTML, clear_output, Math, Markdown
-
-
-class Counter():
-    def __init__(self,progress_bar):
-        self.theCount = 1
-        self.progress_bar = progress_bar
-        self.progress_bar.value = 1
-
-    def __call__(self):
-        self.theCount += 1
-        self.progress_bar.value = self.theCount
-        return self.theCount
+from IPython.display import display, clear_output, Math, Markdown
 
 class PlotStyling(object):
 
