@@ -84,15 +84,14 @@ class PlotStyling(object):
         setattr(self, 'var_select_{}'.format(idx),
                 widgets.Checkbox(
                     value=False,
-                    description='select',
-                    layout=self.txt_box_layout)
+                    description='select')
                 )
 
         box_layout = Layout(display='flex',
                             flex_flow='row',
-                            align_items='stretch',
+                            align_items='flex-start',
                             # border='solid',
-                            width='50%')
+                            width='auto')
         items = [getattr(self, 'var_name_{}'.format(idx)), getattr(self, 'var_units_{}'.format(idx)), getattr(self, 'var_select_{}'.format(idx))]
         box = Box(children=items, layout=box_layout)
 
