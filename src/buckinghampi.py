@@ -186,7 +186,8 @@ class BuckinghamPi:
                 else:
                     num_det_0+=1
                 temp_comb = list(comb).copy()
-            self.__null_spaces.append(b_ns)
+            if b_ns: # if b_ns is not empty add it to the nullspaces list
+                self.__null_spaces.append(b_ns)
         # print("num of det 0 : ",num_det_0)
 
     def __construct_symbolic_pi_terms(self):
