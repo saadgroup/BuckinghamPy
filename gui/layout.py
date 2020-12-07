@@ -6,7 +6,7 @@ from IPython.display import display, clear_output, Math, Markdown
 class PlotStyling(object):
 
     def __init__(self):
-        self.continuousUpdate=False
+        self.continuousUpdate=True
         self.style = {'description_width': 'initial'}
         self.txt_box_layout = Layout(width='auto', height='32px')
         self.children_vbox = [] # variable list
