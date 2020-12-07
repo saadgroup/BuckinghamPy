@@ -22,7 +22,7 @@ class BuckinghamPi:
         '''
         Construct an instance of the BuckinghamPi theorem
         '''
-        self.__all_physical_dimensions = ('A','K','T','L','M','Cd','Mol')
+        self.__all_physical_dimensions = ('a','k','t','l','m','cd','mol')
         self.__physical_dimensions = {v:sp.symbols(v) for v  in self.__all_physical_dimensions}
         self.__physical_dimensions_list = [self.__physical_dimensions[key] for key in self.__physical_dimensions.keys()]
 
