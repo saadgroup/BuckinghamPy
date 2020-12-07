@@ -21,10 +21,8 @@ class BuckinghamPi:
     def __init__(self):
         '''
         Construct an instance of the BuckinghamPi theorem
-        :param physical_dimensions: (string) of the physical dimensions used for this instance. ex: physical_dimensions='m l t'
-        :param sep: (string) used to separate the physical_dimensions, by default it is a white space ' '
         '''
-        self.__all_physical_dimensions = ('a','k','t','l','m','cd','mol')
+        self.__all_physical_dimensions = ('A','K','T','L','M','Cd','Mol')
         self.__physical_dimensions = {v:sp.symbols(v) for v  in self.__all_physical_dimensions}
         self.__physical_dimensions_list = [self.__physical_dimensions[key] for key in self.__physical_dimensions.keys()]
 
@@ -64,11 +62,14 @@ class BuckinghamPi:
         if '^' in string:
             # convert the xor operator to power operator
             string = string.replace('^','**')
-        expr = parse_expr(string.lower(),local_dict=self.physical_dimensions,global_dict={"Integer":sp.Integer})
+        try:
+            expr = parse_expr(string.lower(),local_dict=self.physical_dimensions,global_dict={"Integer":sp.Integer})
+        except:
+            raise Exception("Units has to contain the following (upper or lower case) physical dimensions: {}".format(self.all_physical_dimensions))
         if not (isinstance(expr,Mul) or isinstance(expr,Pow) or isinstance(expr,sp.Symbol)):
             raise Exception('expression of type {} is not of the accepted types ({}, {}, {})'.format(type(expr), Mul, Pow, sp.Symbol))
         if expr.as_coeff_Mul()[0] != 1:
-            raise Exception('cannot have coefficients, {}, that multiply the expression'.format(expr.as_coeff_Mul()[0]))
+            raise Exception('cannot have coefficients, {}, that multiply the expression {}'.format(expr.as_coeff_Mul()[0],expr.as_coeff_Mul()[1]))
 
         #extract the physical dimensions from the units expressions
         used_symbols = list(expr.free_symbols)
