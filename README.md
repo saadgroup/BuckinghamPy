@@ -15,12 +15,12 @@ Now you can import the module and use it as follow
 ```buildoutcfg
 from buckinghampi import BuckinghamPi
 
-Examp = BuckinghamPi(physical_dimensions='m l t')
+Examp = BuckinghamPi()
 Examp.add_variable(name='u', expression='l/t')
 Examp.add_variable(name='rho', expression='m/(l**3)')
 Examp.add_variable(name='mu', expression='m/(t*l)')
 Examp.add_variable(name='dx', expression='l')
-Examp.add_variable(name='dt', expression='t')
+Examp.add_variable(name='dt', expression='t', select=True)
 
 Examp.generate_pi_terms()
 
