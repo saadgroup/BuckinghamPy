@@ -103,6 +103,7 @@ class BuckinghamPi:
         Add variables to use for the pi-theorem
         :param name: (string) name of the variable to be added
         :param expression: (string) expression of the independent physical variable expressed in terms of the k independent physical units.
+        :param select: (boolean) select a variable to only shows up in one single pi term per set of dimensionless terms.
         :return: (Boolean) True if done perfectly
         '''
         expr =  self.__parse_expression(expression)
