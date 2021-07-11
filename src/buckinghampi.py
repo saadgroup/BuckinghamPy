@@ -62,10 +62,9 @@ class BuckinghamPi:
         if '^' in string:
             # convert the xor operator to power operator
             string = string.replace('^','**')
-        try:
-            expr = parse_expr(string.lower(),local_dict=self.physical_dimensions,global_dict={"Integer":sp.Integer})
-        except:
-            raise Exception("Units has to contain the following (upper or lower case) physical dimensions: {}".format(self.all_physical_dimensions))
+
+        expr = parse_expr(string.lower())
+
         if not (isinstance(expr,Mul) or isinstance(expr,Pow) or isinstance(expr,sp.Symbol)):
             raise Exception('expression of type {} is not of the accepted types ({}, {}, {})'.format(type(expr), Mul, Pow, sp.Symbol))
         if expr.as_coeff_Mul()[0] != 1:
