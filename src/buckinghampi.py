@@ -97,12 +97,12 @@ class BuckinghamPi:
 
         return vect
 
-    def add_variable(self, name:str, expression:str, select=False):
+    def add_variable(self, name:str, expression:str, explicit=False):
         '''
         Add variables to use for the pi-theorem
         :param name: (string) name of the variable to be added
         :param expression: (string) expression of the independent physical variable expressed in terms of the k independent physical units.
-        :param select: (boolean) select a variable to only shows up in one single pi term per set of dimensionless terms.
+        :param explicit: (boolean) select a variable to only shows up in one single pi term per set of dimensionless terms.
         :return: (Boolean) True if done perfectly
         '''
         expr =  self.__parse_expression(expression)
@@ -110,12 +110,12 @@ class BuckinghamPi:
         var_idx = len(list(self.__variables.keys()))-1
         self.__var_from_idx[var_idx]= name
         self.__idx_from_var[name] = var_idx
-        if select and (self.__flagged_var['selected']==False):
+        if explicit and (self.__flagged_var['selected'] == False):
             self.__flagged_var['var_name'] = name
             self.__flagged_var['var_index'] = var_idx
             self.__flagged_var['selected'] = True
-        elif select and (self.__flagged_var['selected']==True):
-            raise Exception("you cannot select more than one variable at a time.")
+        elif explicit and (self.__flagged_var['selected'] == True):
+            raise Exception("you cannot select more than one variable at a time to be explicit.")
 
         return True
 
@@ -153,7 +153,7 @@ class BuckinghamPi:
 
     def __solve_null_spaces_for_flagged_variables(self):
 
-        assert self.__flagged_var['selected']==True, " you need to select a variable"
+        assert self.__flagged_var['selected']==True, " you need to select a variable to be explicit"
 
         n = self.num_variable
         m = len(self.__syms_used)
