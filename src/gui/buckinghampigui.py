@@ -1,9 +1,15 @@
 from src.buckinghampi import BuckinghamPi,sp
-import ipywidgets as widgets
-from ipywidgets import HBox, VBox, Layout, Box
-from IPython.display import display, clear_output, Math, Markdown
+try:
+    from IPython import get_ipython
+    if 'IPKernelApp' not in get_ipython().config:  # pragma: no cover
+        raise ImportError("console")
+    import ipywidgets as widgets
+    from ipywidgets import HBox, VBox, Layout, Box
+    from IPython.display import display, clear_output, Math, Markdown
+except:
+    print(" you are not using Ipyhton")
 
-class PlotStyling(object):
+class BuckinghamPiGui(object):
 
     def __init__(self):
         self.continuousUpdate=True
