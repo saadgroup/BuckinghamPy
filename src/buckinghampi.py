@@ -15,7 +15,7 @@ from sympy.parsing.sympy_parser import parse_expr
 from sympy.core.mul import Mul, Pow
 from sympy.core.expr import Expr
 import numpy as np
-from itertools import combinations
+from itertools import combinations,permutations
 
 class BuckinghamPi:
     def __init__(self):
@@ -211,6 +211,44 @@ class BuckinghamPi:
             if not already_exists:
                 self.__allpiterms.append(spacepiterms)
 
+    def __rm_duplicated_powers(self):
+        # this algorithm rely on the fact that the nullspace function
+        # in sympy set one free variable to 1 and the all other to zero
+        # then solve the system by back substitution.
+        duplicate = []
+        dummy_other_terms = self.__allpiterms.copy()
+        for num_set, pi_set in enumerate(self.__allpiterms):
+            dummy_other_terms.remove(pi_set)
+            for num_other, other in enumerate(dummy_other_terms):
+                permutations_sets = permutations(pi_set)
+                for p_set in permutations_sets:
+                    # create a permutation vector from the permutation set
+                    p_V = sp.Matrix(list(p_set))
+                    # create a vector from the other set of dimensionless groups that we are comparing to.
+                    o_V = sp.Matrix(other)
+                    # create an element wise inverse of the vector of dimensionless groups
+                    o_V_inv = o_V.applyfunc(lambda x:x**(-1))
+
+                    result = sp.matrix_multiply_elementwise(p_V, o_V)
+                    # obtain the index of numerical value in the result vector.
+                    # numerical values indicates that one dimensionless group is the inverse of the other group
+                    # in this algorithm the numerical value will be equal to 1 (this is a result of the nullspace function in sympy)
+                    idx_num_result = [x for x in range(len(p_set)) if isinstance(result[x,0],sp.Number)]
+                    # also repeat the multiplication with the inverse vector
+                    result_inv = sp.matrix_multiply_elementwise(p_V, o_V_inv)
+                    # check for the index of the numerical values in the result vector
+                    idx_num_result_inv = [x for x in range(len(p_set)) if isinstance(result_inv[x,0],sp.Number)]
+                    # concatinate the indices into one list
+                    all_indices = idx_num_result + idx_num_result_inv
+                    # compare if the two vector are duplicates
+                    if set(all_indices) == set(list(range(len(p_set)))):
+                        duplicate.append(pi_set)
+
+        # remove duplicates from the main dict of all pi terms
+        for dup in duplicate:
+            self.__allpiterms.remove(dup)
+        return duplicate
+
     def generate_pi_terms(self):
         '''
         Generates all the possible pi terms
@@ -223,6 +261,8 @@ class BuckinghamPi:
         self.__solve_null_spaces()
 
         self.__construct_symbolic_pi_terms()
+
+        self.__rm_duplicated_powers()
 
         return True
 
