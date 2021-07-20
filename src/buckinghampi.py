@@ -22,10 +22,6 @@ class BuckinghamPi:
         '''
         Construct an instance of the BuckinghamPi theorem
         '''
-        self.__all_physical_dimensions = ('a','k','t','l','m','cd','mol')
-        self.__physical_dimensions = {v:sp.symbols(v) for v  in self.__all_physical_dimensions}
-        self.__physical_dimensions_list = [self.__physical_dimensions[key] for key in self.__physical_dimensions.keys()]
-
         self.__var_from_idx={}
         self.__idx_from_var = {}
         self.__variables={}
@@ -34,21 +30,14 @@ class BuckinghamPi:
 
         self.__null_spaces = []
 
-        self.__syms_used = [] # list of physical dimensions symbols
+        self.__fundamental_vars_used = [] # list of fundamental variables being used
 
     @property
-    def physical_dimensions(self):
+    def fundamental_variables(self):
         '''
-        :return: the physical dimensions being used
+        :return: a list of the fundamental variables being used
         '''
-        return self.__physical_dimensions
-
-    @property
-    def all_physical_dimensions(self):
-        '''
-        :return: all possible physical dimensions. they are 7 in total:  ampere (a), kelvin (k), second (t), metre (l), kilogram (m), candela (cd) and mole (mol)
-        '''
-        return self.__all_physical_dimensions
+        return self.__fundamental_vars_used
 
     @property
     def variables(self):
@@ -73,26 +62,26 @@ class BuckinghamPi:
         #extract the physical dimensions from the units expressions
         used_symbols = list(expr.free_symbols)
         for sym in used_symbols:
-            if not sym in self.__syms_used:
-                self.__syms_used.append(sym)
+            if not sym in self.__fundamental_vars_used:
+                self.__fundamental_vars_used.append(sym)
 
         return expr
 
     def __extract_exponents(self,expr:Expr):
-        num_physical_dimensions = len(self.__syms_used)
+        num_physical_dimensions = len(self.__fundamental_vars_used)
         vect = np.zeros(num_physical_dimensions)
         args = list(expr.args) if list(expr.args) else [expr]
         # print(args)
         if isinstance(expr, Pow):
-            vect[self.__syms_used.index(args[0])] = int(args[1])
+            vect[self.__fundamental_vars_used.index(args[0])] = int(args[1])
         else:
             for e in args:
                 if isinstance(expr, sp.Symbol):
-                    vect[self.__syms_used.index(e)]= int(1)
+                    vect[self.__fundamental_vars_used.index(e)]= int(1)
                     # print('({}, {})'.format(e, 1))
                 else:
                     var, exponent= e.as_base_exp()
-                    vect[self.__syms_used.index(var)] = int(exponent)
+                    vect[self.__fundamental_vars_used.index(var)] = int(exponent)
                     # print('({}, {})'.format(var, exponent))
 
         return vect
@@ -121,7 +110,7 @@ class BuckinghamPi:
 
     def __create_M(self):
         self.num_variable = len(list(self.__variables.keys()))
-        num_physical_dimensions = len(self.__syms_used)
+        num_physical_dimensions = len(self.__fundamental_vars_used)
         if self.num_variable < num_physical_dimensions:
             raise Exception('The number of variables has to be greater than the number of physical dimensions.')
 
@@ -156,7 +145,7 @@ class BuckinghamPi:
         assert self.__flagged_var['selected']==True, " you need to select a variable to be explicit"
 
         n = self.num_variable
-        m = len(self.__syms_used)
+        m = len(self.__fundamental_vars_used)
 
         original_indicies = list(range(0, n))
         all_idx = original_indicies.copy()
