@@ -16,6 +16,7 @@ from sympy.core.mul import Mul, Pow
 from sympy.core.expr import Expr
 import numpy as np
 from itertools import combinations,permutations
+from tabulate import tabulate
 
 class BuckinghamPi:
     def __init__(self):
@@ -261,3 +262,26 @@ class BuckinghamPi:
         :return: a list with all the symbolic dimensionless terms for all permutation of the dimensional Matrix M
         '''
         return self.__allpiterms
+
+
+    def print_all(self):
+        '''
+        print all the sets of dimensionless groups in latex form
+        '''
+        latex_form =[]
+        for pi_set in self.__allpiterms:
+            latex_set = []
+            for pi in pi_set:
+                latex_set.append(sp.latex(pi))
+            latex_form.append(latex_set)
+
+        num_of_pi_terms = len(latex_form[0])
+
+        headers = ['sets']
+        for num in range(num_of_pi_terms):
+            headers.append('Pi {}'.format(num+1))
+
+        for num,set in enumerate(latex_form):
+            set.insert(0,num+1)
+
+        print(tabulate(latex_form, headers=headers))
