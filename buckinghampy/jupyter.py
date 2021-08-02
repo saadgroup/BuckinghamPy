@@ -1,4 +1,4 @@
-from src.buckinghampi import BuckinghamPi,sp
+from buckinghampy.console import BuckinghamPi,sp
 import ipywidgets as widgets
 from ipywidgets import HBox, VBox, Layout, Box
 from IPython.display import display, clear_output, Math, Markdown
