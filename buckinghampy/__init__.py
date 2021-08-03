@@ -1,2 +1,2 @@
-from .console import BuckinghamPi
-from .jupyter import BuckinghamPiGui
+from .buckinghampi import BuckinghamPi
+from .buckinghampigui import BuckinghamPiGui

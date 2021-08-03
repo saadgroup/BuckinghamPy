@@ -1,4 +1,4 @@
-from buckinghampy.console import BuckinghamPi,sp
+from buckinghampy.buckinghampi import BuckinghamPi,sp
 try:
     import ipywidgets as widgets
     from ipywidgets import HBox, VBox, Layout, Box

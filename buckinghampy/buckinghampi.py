@@ -1,4 +1,4 @@
-"""console.py: a symbolic module that generates the pi terms based on some variables by applying the pi-theorem."""
+"""buckinghampi.py: a symbolic module that generates the pi terms based on some variables by applying the pi-theorem."""
 
 __author__ = "Mokbel Karam"
 __copyright__ = "Copyright (c) 2020, Mokbel Karam"
