@@ -69,7 +69,7 @@ class BuckinghamPiGui(object):
         setattr(self, 'var_select_{}'.format(idx),
                 widgets.Checkbox(
                     value=False,
-                    description='explicit')
+                    description='Explicit')
                 )
 
         box_layout = Layout(display='flex',
