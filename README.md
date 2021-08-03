@@ -42,5 +42,5 @@ GUI=BuckinghamPiGui()
 ---
 ## See Also
 
-* [Documentation](https://htmlpreview.github.io/?https://github.com/mk-95/BuckinghamPi/blob/master/doc/buckinghampi.m.html)
+* [Documentation](https://htmlpreview.github.io/?https://github.com/saadgroup/BuckinghamPy/blob/master/doc/buckinghampi.m.html)
 --- 
