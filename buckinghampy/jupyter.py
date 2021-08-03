@@ -1,11 +1,22 @@
 from buckinghampy.console import BuckinghamPi,sp
-import ipywidgets as widgets
-from ipywidgets import HBox, VBox, Layout, Box
-from IPython.display import display, clear_output, Math, Markdown
+import traceback
+try:
+    import ipywidgets as widgets
+    from ipywidgets import HBox, VBox, Layout, Box
+    from IPython.display import display, clear_output, Math, Markdown
+except:
+    pass
 
 class BuckinghamPiGui(object):
 
     def __init__(self):
+        def is_in_notebook():
+            rstk = traceback.extract_stack(limit=1)[0]
+            return rstk[0].startswith("<ipython")
+
+        if is_in_notebook() == False:
+            raise Exception("Cannot instantiate the class in a non jupyter cell!")
+
         self.continuousUpdate=True
         self.style = {'description_width': 'initial'}
         self.txt_box_layout = Layout(width='auto', height='32px')
