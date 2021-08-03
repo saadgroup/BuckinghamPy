@@ -1,8 +1,8 @@
 # BuckinghamPi
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/saadgroup/BuckinghamPi/master?filepath=buckinghampy-gui.ipynb) (GUI App)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/saadgroup/BuckinghamPi/develop?filepath=buckinghampy-gui.ipynb) (GUI App)
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mk-95/BuckinghamPi/master?filepath=examples.ipynb) (Script)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mk-95/BuckinghamPi/develop?filepath=examples.ipynb) (Script)
 
 Python code that implement the Buckingham-Pi theorem for different variables and return all possible dimensionless pi terms
 
