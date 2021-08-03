@@ -7,13 +7,14 @@ try:
 except:
     pass
 
+def is_in_notebook():
+    rstk = traceback.extract_stack(limit=1)[0]
+    return rstk[0].startswith("<ipython")
+
+
 class BuckinghamPiGui(object):
 
     def __init__(self):
-        def is_in_notebook():
-            rstk = traceback.extract_stack(limit=1)[0]
-            return rstk[0].startswith("<ipython")
-
         if is_in_notebook() == False:
             raise Exception("Cannot instantiate the class in a non jupyter cell!")
 
