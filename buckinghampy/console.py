@@ -112,7 +112,7 @@ class BuckinghamPi:
     def __create_M(self):
         self.num_variable = len(list(self.__variables.keys()))
         num_physical_dimensions = len(self.__fundamental_vars_used)
-        if self.num_variable < num_physical_dimensions:
+        if self.num_variable <= num_physical_dimensions:
             raise Exception('The number of variables has to be greater than the number of physical dimensions.')
 
         self.M = np.zeros(shape=(self.num_variable, num_physical_dimensions))
