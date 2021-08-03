@@ -1,36 +1,42 @@
-# BuckinghamPi
+# BuckinghamPy
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/saadgroup/BuckinghamPi/master?filepath=buckinghampy-gui.ipynb) (GUI App)
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/mk-95/BuckinghamPi/master?filepath=examples.ipynb) (Script)
 
-Python code that implement the Buckingham-Pi theorem for different variables and return all possible dimensionless pi terms
+Python code that implements the Buckingham-Pi theorem and return all sets of dimensionless groups
 
 ## Installation
 ---
-clone the package into a directory
+Clone the package from the github repository into the current directory
 ```buildoutcfg
 git clone https://github.com/saadgroup/BuckinghamPi.git . 
-python setup.py install
 ```
-
-Now you can import the module and use it as follow
+Use `pip` tool to install the package in the active python evironment
 ```buildoutcfg
-from buckinghampi import BuckinghamPi
+pip install .
+```
+## Example
+Now you can import the module and use it as follows
+```buildoutcfg
+from buckinghampy import BuckinghamPi
 
-Examp = BuckinghamPi()
-Examp.add_variable(name='u', expression='l/t')
-Examp.add_variable(name='rho', expression='m/(l**3)')
-Examp.add_variable(name='mu', expression='m/(t*l)')
-Examp.add_variable(name='dx', expression='l')
-Examp.add_variable(name='dt', expression='t', select=True)
+Example = BuckinghamPi()
+Example.add_variable(name='u', expression='l/t')
+Example.add_variable(name='rho', expression='m/(l**3)')
+Example.add_variable(name='mu', expression='m/(t*l)')
+Example.add_variable(name='dx', expression='l')
+Example.add_variable(name='dt', expression='t', explicit=True)
 
-Examp.generate_pi_terms()
+Example.generate_pi_terms()
 
-for space in Examp.pi_terms:
-    print('-------------------------')
-    for term in space:
-        print(term)
+Example.print_all()
+```
+or you can import the graphic user interface only in a Jupyter cell
+```buildoutcfg
+from buckinghampy import BuckinghamPiGui
+
+GUI=BuckinghamPiGui()
 ```
 
 ---

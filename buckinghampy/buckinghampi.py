@@ -15,17 +15,14 @@ from sympy.parsing.sympy_parser import parse_expr
 from sympy.core.mul import Mul, Pow
 from sympy.core.expr import Expr
 import numpy as np
-from itertools import combinations
+from itertools import combinations,permutations
+from tabulate import tabulate
 
 class BuckinghamPi:
     def __init__(self):
         '''
         Construct an instance of the BuckinghamPi theorem
         '''
-        self.__all_physical_dimensions = ('a','k','t','l','m','cd','mol')
-        self.__physical_dimensions = {v:sp.symbols(v) for v  in self.__all_physical_dimensions}
-        self.__physical_dimensions_list = [self.__physical_dimensions[key] for key in self.__physical_dimensions.keys()]
-
         self.__var_from_idx={}
         self.__idx_from_var = {}
         self.__variables={}
@@ -34,21 +31,14 @@ class BuckinghamPi:
 
         self.__null_spaces = []
 
-        self.__syms_used = [] # list of physical dimensions symbols
+        self.__fundamental_vars_used = [] # list of fundamental variables being used
 
     @property
-    def physical_dimensions(self):
+    def fundamental_variables(self):
         '''
-        :return: the physical dimensions being used
+        :return: a list of the fundamental variables being used
         '''
-        return self.__physical_dimensions
-
-    @property
-    def all_physical_dimensions(self):
-        '''
-        :return: all possible physical dimensions. they are 7 in total:  ampere (a), kelvin (k), second (t), metre (l), kilogram (m), candela (cd) and mole (mol)
-        '''
-        return self.__all_physical_dimensions
+        return self.__fundamental_vars_used
 
     @property
     def variables(self):
@@ -62,10 +52,9 @@ class BuckinghamPi:
         if '^' in string:
             # convert the xor operator to power operator
             string = string.replace('^','**')
-        try:
-            expr = parse_expr(string.lower(),local_dict=self.physical_dimensions,global_dict={"Integer":sp.Integer})
-        except:
-            raise Exception("Units has to contain the following (upper or lower case) physical dimensions: {}".format(self.all_physical_dimensions))
+
+        expr = parse_expr(string.lower())
+
         if not (isinstance(expr,Mul) or isinstance(expr,Pow) or isinstance(expr,sp.Symbol)):
             raise Exception('expression of type {} is not of the accepted types ({}, {}, {})'.format(type(expr), Mul, Pow, sp.Symbol))
         if expr.as_coeff_Mul()[0] != 1:
@@ -74,36 +63,36 @@ class BuckinghamPi:
         #extract the physical dimensions from the units expressions
         used_symbols = list(expr.free_symbols)
         for sym in used_symbols:
-            if not sym in self.__syms_used:
-                self.__syms_used.append(sym)
+            if not sym in self.__fundamental_vars_used:
+                self.__fundamental_vars_used.append(sym)
 
         return expr
 
     def __extract_exponents(self,expr:Expr):
-        num_physical_dimensions = len(self.__syms_used)
+        num_physical_dimensions = len(self.__fundamental_vars_used)
         vect = np.zeros(num_physical_dimensions)
         args = list(expr.args) if list(expr.args) else [expr]
         # print(args)
         if isinstance(expr, Pow):
-            vect[self.__syms_used.index(args[0])] = int(args[1])
+            vect[self.__fundamental_vars_used.index(args[0])] = int(args[1])
         else:
             for e in args:
                 if isinstance(expr, sp.Symbol):
-                    vect[self.__syms_used.index(e)]= int(1)
+                    vect[self.__fundamental_vars_used.index(e)]= int(1)
                     # print('({}, {})'.format(e, 1))
                 else:
                     var, exponent= e.as_base_exp()
-                    vect[self.__syms_used.index(var)] = int(exponent)
+                    vect[self.__fundamental_vars_used.index(var)] = int(exponent)
                     # print('({}, {})'.format(var, exponent))
 
         return vect
 
-    def add_variable(self, name:str, expression:str, select=False):
+    def add_variable(self, name:str, expression:str, explicit=False):
         '''
         Add variables to use for the pi-theorem
         :param name: (string) name of the variable to be added
         :param expression: (string) expression of the independent physical variable expressed in terms of the k independent physical units.
-        :param select: (boolean) select a variable to only shows up in one single pi term per set of dimensionless terms.
+        :param explicit: (boolean) select a variable to only shows up in one single pi term per set of dimensionless terms.
         :return: (Boolean) True if done perfectly
         '''
         expr =  self.__parse_expression(expression)
@@ -111,19 +100,19 @@ class BuckinghamPi:
         var_idx = len(list(self.__variables.keys()))-1
         self.__var_from_idx[var_idx]= name
         self.__idx_from_var[name] = var_idx
-        if select and (self.__flagged_var['selected']==False):
+        if explicit and (self.__flagged_var['selected'] == False):
             self.__flagged_var['var_name'] = name
             self.__flagged_var['var_index'] = var_idx
             self.__flagged_var['selected'] = True
-        elif select and (self.__flagged_var['selected']==True):
-            raise Exception("you cannot select more than one variable at a time.")
+        elif explicit and (self.__flagged_var['selected'] == True):
+            raise Exception("you cannot select more than one variable at a time to be explicit.")
 
         return True
 
     def __create_M(self):
         self.num_variable = len(list(self.__variables.keys()))
-        num_physical_dimensions = len(self.__syms_used)
-        if self.num_variable < num_physical_dimensions:
+        num_physical_dimensions = len(self.__fundamental_vars_used)
+        if self.num_variable <= num_physical_dimensions:
             raise Exception('The number of variables has to be greater than the number of physical dimensions.')
 
         self.M = np.zeros(shape=(self.num_variable, num_physical_dimensions))
@@ -154,10 +143,10 @@ class BuckinghamPi:
 
     def __solve_null_spaces_for_flagged_variables(self):
 
-        assert self.__flagged_var['selected']==True, " you need to select a variable"
+        assert self.__flagged_var['selected']==True, " you need to select a variable to be explicit"
 
         n = self.num_variable
-        m = len(self.__syms_used)
+        m = len(self.__fundamental_vars_used)
 
         original_indicies = list(range(0, n))
         all_idx = original_indicies.copy()
@@ -212,6 +201,44 @@ class BuckinghamPi:
             if not already_exists:
                 self.__allpiterms.append(spacepiterms)
 
+    def __rm_duplicated_powers(self):
+        # this algorithm rely on the fact that the nullspace function
+        # in sympy set one free variable to 1 and the all other to zero
+        # then solve the system by back substitution.
+        duplicate = []
+        dummy_other_terms = self.__allpiterms.copy()
+        for num_set, pi_set in enumerate(self.__allpiterms):
+            dummy_other_terms.remove(pi_set)
+            for num_other, other in enumerate(dummy_other_terms):
+                permutations_sets = permutations(pi_set)
+                for p_set in permutations_sets:
+                    # create a permutation vector from the permutation set
+                    p_V = sp.Matrix(list(p_set))
+                    # create a vector from the other set of dimensionless groups that we are comparing to.
+                    o_V = sp.Matrix(other)
+                    # create an element wise inverse of the vector of dimensionless groups
+                    o_V_inv = o_V.applyfunc(lambda x:x**(-1))
+
+                    result = sp.matrix_multiply_elementwise(p_V, o_V)
+                    # obtain the index of numerical value in the result vector.
+                    # numerical values indicates that one dimensionless group is the inverse of the other group
+                    # in this algorithm the numerical value will be equal to 1 (this is a result of the nullspace function in sympy)
+                    idx_num_result = [x for x in range(len(p_set)) if isinstance(result[x,0],sp.Number)]
+                    # also repeat the multiplication with the inverse vector
+                    result_inv = sp.matrix_multiply_elementwise(p_V, o_V_inv)
+                    # check for the index of the numerical values in the result vector
+                    idx_num_result_inv = [x for x in range(len(p_set)) if isinstance(result_inv[x,0],sp.Number)]
+                    # concatinate the indices into one list
+                    all_indices = idx_num_result + idx_num_result_inv
+                    # compare if the two vector are duplicates
+                    if set(all_indices) == set(list(range(len(p_set)))):
+                        duplicate.append(pi_set)
+
+        # remove duplicates from the main dict of all pi terms
+        for dup in duplicate:
+            self.__allpiterms.remove(dup)
+        return duplicate
+
     def generate_pi_terms(self):
         '''
         Generates all the possible pi terms
@@ -225,6 +252,8 @@ class BuckinghamPi:
 
         self.__construct_symbolic_pi_terms()
 
+        self.__rm_duplicated_powers()
+
         return True
 
     @property
@@ -233,3 +262,26 @@ class BuckinghamPi:
         :return: a list with all the symbolic dimensionless terms for all permutation of the dimensional Matrix M
         '''
         return self.__allpiterms
+
+
+    def print_all(self):
+        '''
+        print all the sets of dimensionless groups in latex form
+        '''
+        latex_form =[]
+        for pi_set in self.__allpiterms:
+            latex_set = []
+            for pi in pi_set:
+                latex_set.append(sp.latex(pi))
+            latex_form.append(latex_set)
+
+        num_of_pi_terms = len(latex_form[0])
+
+        headers = ['sets']
+        for num in range(num_of_pi_terms):
+            headers.append('Pi {}'.format(num+1))
+
+        for num,set in enumerate(latex_form):
+            set.insert(0,num+1)
+
+        print(tabulate(latex_form, headers=headers))

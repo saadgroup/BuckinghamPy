@@ -2,8 +2,8 @@
 dir=doc
 if [ -d $dir ]
 then
-    pdoc --html src/buckinghampi.py --html-dir ./doc --overwrite
+    pdoc --html buckinghampy/buckinghampi.py --html-dir ./doc --overwrite
 else
     mkdir $dir
-    pdoc --html src/buckinghampi.py --html-dir ./doc
+    pdoc --html buckinghampy/buckinghampi.py --html-dir ./doc
 fi

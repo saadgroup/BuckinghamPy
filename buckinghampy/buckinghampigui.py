@@ -1,11 +1,21 @@
-from src.buckinghampi import BuckinghamPi,sp
-import ipywidgets as widgets
-from ipywidgets import HBox, VBox, Layout, Box
-from IPython.display import display, clear_output, Math, Markdown
+from buckinghampy.buckinghampi import BuckinghamPi,sp
+try:
+    import ipywidgets as widgets
+    from ipywidgets import HBox, VBox, Layout, Box
+    from IPython.display import display, clear_output, Math, Markdown
+except:
+    pass
 
-class PlotStyling(object):
+
+
+class BuckinghamPiGui(object):
 
     def __init__(self):
+        import sys
+        inJupyter = sys.argv[-1].endswith('json')
+        if inJupyter == False:
+            raise Exception("Cannot instantiate the class in a non jupyter cell!")
+
         self.continuousUpdate=True
         self.style = {'description_width': 'initial'}
         self.txt_box_layout = Layout(width='auto', height='32px')
@@ -59,7 +69,7 @@ class PlotStyling(object):
         setattr(self, 'var_select_{}'.format(idx),
                 widgets.Checkbox(
                     value=False,
-                    description='select')
+                    description='Explicit')
                 )
 
         box_layout = Layout(display='flex',
@@ -161,12 +171,13 @@ class PlotStyling(object):
             var_units = getattr(self, 'var_units_{}'.format(idx)).value
             var_select = getattr(self, 'var_select_{}'.format(idx)).value
 
-            self.data['vars'][var_name] = {'units':var_units,'select':var_select}
+            self.data['vars'][var_name] = {'units':var_units,'explicit':var_select}
 
     def generate_solution(self):
         problem = BuckinghamPi()
         for varname in self.data['vars'].keys():
-            problem.add_variable(name=varname,expression=self.data['vars'][varname]['units'],select=self.data['vars'][varname]['select'])
+            problem.add_variable(name=varname, expression=self.data['vars'][varname]['units'],
+                                 explicit=self.data['vars'][varname]['explicit'])
         problem.generate_pi_terms()
         self.data['sol'] = problem.pi_terms
 

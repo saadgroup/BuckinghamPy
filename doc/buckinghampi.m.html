@@ -1052,6 +1052,7 @@ table {
     <li class="mono"><a href="#buckinghampi.BuckinghamPi.__init__">__init__</a></li>
     <li class="mono"><a href="#buckinghampi.BuckinghamPi.add_variable">add_variable</a></li>
     <li class="mono"><a href="#buckinghampi.BuckinghamPi.generate_pi_terms">generate_pi_terms</a></li>
+    <li class="mono"><a href="#buckinghampi.BuckinghamPi.print_all">print_all</a></li>
   </ul>
 
         </li>
@@ -1091,17 +1092,14 @@ table {
 <span class="kn">from</span> <span class="nn">sympy.core.mul</span> <span class="kn">import</span> <span class="n">Mul</span><span class="p">,</span> <span class="n">Pow</span>
 <span class="kn">from</span> <span class="nn">sympy.core.expr</span> <span class="kn">import</span> <span class="n">Expr</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">combinations</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">combinations</span><span class="p">,</span><span class="n">permutations</span>
+<span class="kn">from</span> <span class="nn">tabulate</span> <span class="kn">import</span> <span class="n">tabulate</span>
 
 <span class="k">class</span> <span class="nc">BuckinghamPi</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Construct an instance of the BuckinghamPi theorem</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__all_physical_dimensions</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="s1">&#39;t&#39;</span><span class="p">,</span><span class="s1">&#39;l&#39;</span><span class="p">,</span><span class="s1">&#39;m&#39;</span><span class="p">,</span><span class="s1">&#39;cd&#39;</span><span class="p">,</span><span class="s1">&#39;mol&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__physical_dimensions</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span><span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span>  <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__all_physical_dimensions</span><span class="p">}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__physical_dimensions_list</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__physical_dimensions</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__physical_dimensions</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">__var_from_idx</span><span class="o">=</span><span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__idx_from_var</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__variables</span><span class="o">=</span><span class="p">{}</span>
@@ -1110,21 +1108,14 @@ table {
 
         <span class="bp">self</span><span class="o">.</span><span class="n">__null_spaces</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">__syms_used</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># list of physical dimensions symbols</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__fundamental_vars_used</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># list of fundamental variables being used</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">physical_dimensions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">fundamental_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">        :return: the physical dimensions being used</span>
+<span class="sd">        :return: a list of the fundamental variables being used</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__physical_dimensions</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">all_physical_dimensions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">        :return: all possible physical dimensions. they are 7 in total:  ampere (a), kelvin (k), second (t), metre (l), kilogram (m), candela (cd) and mole (mol)</span>
-<span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__all_physical_dimensions</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__fundamental_vars_used</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1138,10 +1129,9 @@ table {
         <span class="k">if</span> <span class="s1">&#39;^&#39;</span> <span class="ow">in</span> <span class="n">string</span><span class="p">:</span>
             <span class="c1"># convert the xor operator to power operator</span>
             <span class="n">string</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;^&#39;</span><span class="p">,</span><span class="s1">&#39;**&#39;</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">expr</span> <span class="o">=</span> <span class="n">parse_expr</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span><span class="n">local_dict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">physical_dimensions</span><span class="p">,</span><span class="n">global_dict</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Integer&quot;</span><span class="p">:</span><span class="n">sp</span><span class="o">.</span><span class="n">Integer</span><span class="p">})</span>
-        <span class="k">except</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Units has to contain the following (upper or lower case) physical dimensions: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_physical_dimensions</span><span class="p">))</span>
+
+        <span class="n">expr</span> <span class="o">=</span> <span class="n">parse_expr</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span><span class="n">Mul</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span><span class="n">Pow</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span><span class="n">sp</span><span class="o">.</span><span class="n">Symbol</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;expression of type {} is not of the accepted types ({}, {}, {})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">expr</span><span class="p">),</span> <span class="n">Mul</span><span class="p">,</span> <span class="n">Pow</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">Symbol</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">expr</span><span class="o">.</span><span class="n">as_coeff_Mul</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
@@ -1150,36 +1140,36 @@ table {
         <span class="c1">#extract the physical dimensions from the units expressions</span>
         <span class="n">used_symbols</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">free_symbols</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">used_symbols</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">sym</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__syms_used</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__syms_used</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sym</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">sym</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__fundamental_vars_used</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__fundamental_vars_used</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sym</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">expr</span>
 
     <span class="k">def</span> <span class="nf">__extract_exponents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">expr</span><span class="p">:</span><span class="n">Expr</span><span class="p">):</span>
-        <span class="n">num_physical_dimensions</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__syms_used</span><span class="p">)</span>
+        <span class="n">num_physical_dimensions</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__fundamental_vars_used</span><span class="p">)</span>
         <span class="n">vect</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_physical_dimensions</span><span class="p">)</span>
         <span class="n">args</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">args</span><span class="p">)</span> <span class="k">if</span> <span class="nb">list</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">args</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">expr</span><span class="p">]</span>
         <span class="c1"># print(args)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">Pow</span><span class="p">):</span>
-            <span class="n">vect</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__syms_used</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">vect</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__fundamental_vars_used</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">Symbol</span><span class="p">):</span>
-                    <span class="n">vect</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__syms_used</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">e</span><span class="p">)]</span><span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="n">vect</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__fundamental_vars_used</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">e</span><span class="p">)]</span><span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
                     <span class="c1"># print(&#39;({}, {})&#39;.format(e, 1))</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">var</span><span class="p">,</span> <span class="n">exponent</span><span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">as_base_exp</span><span class="p">()</span>
-                    <span class="n">vect</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__syms_used</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">exponent</span><span class="p">)</span>
+                    <span class="n">vect</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__fundamental_vars_used</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">exponent</span><span class="p">)</span>
                     <span class="c1"># print(&#39;({}, {})&#39;.format(var, exponent))</span>
 
         <span class="k">return</span> <span class="n">vect</span>
 
-    <span class="k">def</span> <span class="nf">add_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">expression</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">select</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">add_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">expression</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">explicit</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Add variables to use for the pi-theorem</span>
 <span class="sd">        :param name: (string) name of the variable to be added</span>
 <span class="sd">        :param expression: (string) expression of the independent physical variable expressed in terms of the k independent physical units.</span>
-<span class="sd">        :param select: (boolean) select a variable to only shows up in one single pi term per set of dimensionless terms.</span>
+<span class="sd">        :param explicit: (boolean) select a variable to only shows up in one single pi term per set of dimensionless terms.</span>
 <span class="sd">        :return: (Boolean) True if done perfectly</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="n">expr</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">__parse_expression</span><span class="p">(</span><span class="n">expression</span><span class="p">)</span>
@@ -1187,19 +1177,19 @@ table {
         <span class="n">var_idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__variables</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="o">-</span><span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__var_from_idx</span><span class="p">[</span><span class="n">var_idx</span><span class="p">]</span><span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__idx_from_var</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_idx</span>
-        <span class="k">if</span> <span class="n">select</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span><span class="o">==</span><span class="bp">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">explicit</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">False</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;var_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;var_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_idx</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
-        <span class="k">elif</span> <span class="n">select</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span><span class="o">==</span><span class="bp">True</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;you cannot select more than one variable at a time.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">explicit</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">True</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;you cannot select more than one variable at a time to be explicit.&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">True</span>
 
     <span class="k">def</span> <span class="nf">__create_M</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_variable</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__variables</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
-        <span class="n">num_physical_dimensions</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__syms_used</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_variable</span> <span class="o">&lt;</span> <span class="n">num_physical_dimensions</span><span class="p">:</span>
+        <span class="n">num_physical_dimensions</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__fundamental_vars_used</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_variable</span> <span class="o">&lt;=</span> <span class="n">num_physical_dimensions</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;The number of variables has to be greater than the number of physical dimensions.&#39;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_variable</span><span class="p">,</span> <span class="n">num_physical_dimensions</span><span class="p">))</span>
@@ -1230,10 +1220,10 @@ table {
 
     <span class="k">def</span> <span class="nf">__solve_null_spaces_for_flagged_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span><span class="o">==</span><span class="bp">True</span><span class="p">,</span> <span class="s2">&quot; you need to select a variable&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span><span class="o">==</span><span class="bp">True</span><span class="p">,</span> <span class="s2">&quot; you need to select a variable to be explicit&quot;</span>
 
         <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_variable</span>
-        <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__syms_used</span><span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__fundamental_vars_used</span><span class="p">)</span>
 
         <span class="n">original_indicies</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
         <span class="n">all_idx</span> <span class="o">=</span> <span class="n">original_indicies</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -1288,6 +1278,44 @@ table {
             <span class="k">if</span> <span class="ow">not</span> <span class="n">already_exists</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__allpiterms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spacepiterms</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">__rm_duplicated_powers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># this algorithm rely on the fact that the nullspace function</span>
+        <span class="c1"># in sympy set one free variable to 1 and the all other to zero</span>
+        <span class="c1"># then solve the system by back substitution.</span>
+        <span class="n">duplicate</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">dummy_other_terms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__allpiterms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">num_set</span><span class="p">,</span> <span class="n">pi_set</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__allpiterms</span><span class="p">):</span>
+            <span class="n">dummy_other_terms</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">pi_set</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">num_other</span><span class="p">,</span> <span class="n">other</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dummy_other_terms</span><span class="p">):</span>
+                <span class="n">permutations_sets</span> <span class="o">=</span> <span class="n">permutations</span><span class="p">(</span><span class="n">pi_set</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">p_set</span> <span class="ow">in</span> <span class="n">permutations_sets</span><span class="p">:</span>
+                    <span class="c1"># create a permutation vector from the permutation set</span>
+                    <span class="n">p_V</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Matrix</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">p_set</span><span class="p">))</span>
+                    <span class="c1"># create a vector from the other set of dimensionless groups that we are comparing to.</span>
+                    <span class="n">o_V</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Matrix</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+                    <span class="c1"># create an element wise inverse of the vector of dimensionless groups</span>
+                    <span class="n">o_V_inv</span> <span class="o">=</span> <span class="n">o_V</span><span class="o">.</span><span class="n">applyfunc</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+                    <span class="n">result</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">matrix_multiply_elementwise</span><span class="p">(</span><span class="n">p_V</span><span class="p">,</span> <span class="n">o_V</span><span class="p">)</span>
+                    <span class="c1"># obtain the index of numerical value in the result vector.</span>
+                    <span class="c1"># numerical values indicates that one dimensionless group is the inverse of the other group</span>
+                    <span class="c1"># in this algorithm the numerical value will be equal to 1 (this is a result of the nullspace function in sympy)</span>
+                    <span class="n">idx_num_result</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p_set</span><span class="p">))</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">x</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="n">sp</span><span class="o">.</span><span class="n">Number</span><span class="p">)]</span>
+                    <span class="c1"># also repeat the multiplication with the inverse vector</span>
+                    <span class="n">result_inv</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">matrix_multiply_elementwise</span><span class="p">(</span><span class="n">p_V</span><span class="p">,</span> <span class="n">o_V_inv</span><span class="p">)</span>
+                    <span class="c1"># check for the index of the numerical values in the result vector</span>
+                    <span class="n">idx_num_result_inv</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p_set</span><span class="p">))</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result_inv</span><span class="p">[</span><span class="n">x</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="n">sp</span><span class="o">.</span><span class="n">Number</span><span class="p">)]</span>
+                    <span class="c1"># concatinate the indices into one list</span>
+                    <span class="n">all_indices</span> <span class="o">=</span> <span class="n">idx_num_result</span> <span class="o">+</span> <span class="n">idx_num_result_inv</span>
+                    <span class="c1"># compare if the two vector are duplicates</span>
+                    <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">all_indices</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p_set</span><span class="p">)))):</span>
+                        <span class="n">duplicate</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pi_set</span><span class="p">)</span>
+
+        <span class="c1"># remove duplicates from the main dict of all pi terms</span>
+        <span class="k">for</span> <span class="n">dup</span> <span class="ow">in</span> <span class="n">duplicate</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__allpiterms</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">dup</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">duplicate</span>
+
     <span class="k">def</span> <span class="nf">generate_pi_terms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Generates all the possible pi terms</span>
@@ -1301,6 +1329,8 @@ table {
 
         <span class="bp">self</span><span class="o">.</span><span class="n">__construct_symbolic_pi_terms</span><span class="p">()</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">__rm_duplicated_powers</span><span class="p">()</span>
+
         <span class="k">return</span> <span class="bp">True</span>
 
     <span class="nd">@property</span>
@@ -1309,6 +1339,29 @@ table {
 <span class="sd">        :return: a list with all the symbolic dimensionless terms for all permutation of the dimensional Matrix M</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__allpiterms</span>
+
+
+    <span class="k">def</span> <span class="nf">print_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        print all the sets of dimensionless groups in latex form</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">latex_form</span> <span class="o">=</span><span class="p">[]</span>
+        <span class="k">for</span> <span class="n">pi_set</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__allpiterms</span><span class="p">:</span>
+            <span class="n">latex_set</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">pi</span> <span class="ow">in</span> <span class="n">pi_set</span><span class="p">:</span>
+                <span class="n">latex_set</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">latex</span><span class="p">(</span><span class="n">pi</span><span class="p">))</span>
+            <span class="n">latex_form</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">latex_set</span><span class="p">)</span>
+
+        <span class="n">num_of_pi_terms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">latex_form</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sets&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_of_pi_terms</span><span class="p">):</span>
+            <span class="n">headers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;Pi {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">num</span><span class="p">,</span><span class="nb">set</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">latex_form</span><span class="p">):</span>
+            <span class="nb">set</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">num</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">print</span><span class="p">(</span><span class="n">tabulate</span><span class="p">(</span><span class="n">latex_form</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">))</span>
 </pre></div>
 
   </div>
@@ -1332,10 +1385,6 @@ table {
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Construct an instance of the BuckinghamPi theorem</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__all_physical_dimensions</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="s1">&#39;t&#39;</span><span class="p">,</span><span class="s1">&#39;l&#39;</span><span class="p">,</span><span class="s1">&#39;m&#39;</span><span class="p">,</span><span class="s1">&#39;cd&#39;</span><span class="p">,</span><span class="s1">&#39;mol&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__physical_dimensions</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span><span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span>  <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__all_physical_dimensions</span><span class="p">}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__physical_dimensions_list</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__physical_dimensions</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__physical_dimensions</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
-
         <span class="bp">self</span><span class="o">.</span><span class="n">__var_from_idx</span><span class="o">=</span><span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__idx_from_var</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__variables</span><span class="o">=</span><span class="p">{}</span>
@@ -1344,21 +1393,14 @@ table {
 
         <span class="bp">self</span><span class="o">.</span><span class="n">__null_spaces</span> <span class="o">=</span> <span class="p">[]</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">__syms_used</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># list of physical dimensions symbols</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__fundamental_vars_used</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># list of fundamental variables being used</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">physical_dimensions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">fundamental_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">        :return: the physical dimensions being used</span>
+<span class="sd">        :return: a list of the fundamental variables being used</span>
 <span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__physical_dimensions</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">all_physical_dimensions</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">        :return: all possible physical dimensions. they are 7 in total:  ampere (a), kelvin (k), second (t), metre (l), kilogram (m), candela (cd) and mole (mol)</span>
-<span class="sd">        &#39;&#39;&#39;</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__all_physical_dimensions</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__fundamental_vars_used</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -1372,10 +1414,9 @@ table {
         <span class="k">if</span> <span class="s1">&#39;^&#39;</span> <span class="ow">in</span> <span class="n">string</span><span class="p">:</span>
             <span class="c1"># convert the xor operator to power operator</span>
             <span class="n">string</span> <span class="o">=</span> <span class="n">string</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;^&#39;</span><span class="p">,</span><span class="s1">&#39;**&#39;</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="n">expr</span> <span class="o">=</span> <span class="n">parse_expr</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span><span class="n">local_dict</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">physical_dimensions</span><span class="p">,</span><span class="n">global_dict</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;Integer&quot;</span><span class="p">:</span><span class="n">sp</span><span class="o">.</span><span class="n">Integer</span><span class="p">})</span>
-        <span class="k">except</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Units has to contain the following (upper or lower case) physical dimensions: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">all_physical_dimensions</span><span class="p">))</span>
+
+        <span class="n">expr</span> <span class="o">=</span> <span class="n">parse_expr</span><span class="p">(</span><span class="n">string</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+
         <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span><span class="n">Mul</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span><span class="n">Pow</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span><span class="n">sp</span><span class="o">.</span><span class="n">Symbol</span><span class="p">)):</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;expression of type {} is not of the accepted types ({}, {}, {})&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">expr</span><span class="p">),</span> <span class="n">Mul</span><span class="p">,</span> <span class="n">Pow</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">Symbol</span><span class="p">))</span>
         <span class="k">if</span> <span class="n">expr</span><span class="o">.</span><span class="n">as_coeff_Mul</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
@@ -1384,36 +1425,36 @@ table {
         <span class="c1">#extract the physical dimensions from the units expressions</span>
         <span class="n">used_symbols</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">free_symbols</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">used_symbols</span><span class="p">:</span>
-            <span class="k">if</span> <span class="ow">not</span> <span class="n">sym</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__syms_used</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__syms_used</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sym</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">sym</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__fundamental_vars_used</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__fundamental_vars_used</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sym</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">expr</span>
 
     <span class="k">def</span> <span class="nf">__extract_exponents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">expr</span><span class="p">:</span><span class="n">Expr</span><span class="p">):</span>
-        <span class="n">num_physical_dimensions</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__syms_used</span><span class="p">)</span>
+        <span class="n">num_physical_dimensions</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__fundamental_vars_used</span><span class="p">)</span>
         <span class="n">vect</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_physical_dimensions</span><span class="p">)</span>
         <span class="n">args</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">args</span><span class="p">)</span> <span class="k">if</span> <span class="nb">list</span><span class="p">(</span><span class="n">expr</span><span class="o">.</span><span class="n">args</span><span class="p">)</span> <span class="k">else</span> <span class="p">[</span><span class="n">expr</span><span class="p">]</span>
         <span class="c1"># print(args)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">Pow</span><span class="p">):</span>
-            <span class="n">vect</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__syms_used</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">vect</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__fundamental_vars_used</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">sp</span><span class="o">.</span><span class="n">Symbol</span><span class="p">):</span>
-                    <span class="n">vect</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__syms_used</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">e</span><span class="p">)]</span><span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="n">vect</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__fundamental_vars_used</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">e</span><span class="p">)]</span><span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
                     <span class="c1"># print(&#39;({}, {})&#39;.format(e, 1))</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="n">var</span><span class="p">,</span> <span class="n">exponent</span><span class="o">=</span> <span class="n">e</span><span class="o">.</span><span class="n">as_base_exp</span><span class="p">()</span>
-                    <span class="n">vect</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__syms_used</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">exponent</span><span class="p">)</span>
+                    <span class="n">vect</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__fundamental_vars_used</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">var</span><span class="p">)]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">exponent</span><span class="p">)</span>
                     <span class="c1"># print(&#39;({}, {})&#39;.format(var, exponent))</span>
 
         <span class="k">return</span> <span class="n">vect</span>
 
-    <span class="k">def</span> <span class="nf">add_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">expression</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">select</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">add_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">expression</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">explicit</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Add variables to use for the pi-theorem</span>
 <span class="sd">        :param name: (string) name of the variable to be added</span>
 <span class="sd">        :param expression: (string) expression of the independent physical variable expressed in terms of the k independent physical units.</span>
-<span class="sd">        :param select: (boolean) select a variable to only shows up in one single pi term per set of dimensionless terms.</span>
+<span class="sd">        :param explicit: (boolean) select a variable to only shows up in one single pi term per set of dimensionless terms.</span>
 <span class="sd">        :return: (Boolean) True if done perfectly</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="n">expr</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">__parse_expression</span><span class="p">(</span><span class="n">expression</span><span class="p">)</span>
@@ -1421,19 +1462,19 @@ table {
         <span class="n">var_idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__variables</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="o">-</span><span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__var_from_idx</span><span class="p">[</span><span class="n">var_idx</span><span class="p">]</span><span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__idx_from_var</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_idx</span>
-        <span class="k">if</span> <span class="n">select</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span><span class="o">==</span><span class="bp">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">explicit</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">False</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;var_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;var_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_idx</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
-        <span class="k">elif</span> <span class="n">select</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span><span class="o">==</span><span class="bp">True</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;you cannot select more than one variable at a time.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">explicit</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">True</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;you cannot select more than one variable at a time to be explicit.&quot;</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="bp">True</span>
 
     <span class="k">def</span> <span class="nf">__create_M</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_variable</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__variables</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
-        <span class="n">num_physical_dimensions</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__syms_used</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_variable</span> <span class="o">&lt;</span> <span class="n">num_physical_dimensions</span><span class="p">:</span>
+        <span class="n">num_physical_dimensions</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__fundamental_vars_used</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_variable</span> <span class="o">&lt;=</span> <span class="n">num_physical_dimensions</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;The number of variables has to be greater than the number of physical dimensions.&#39;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_variable</span><span class="p">,</span> <span class="n">num_physical_dimensions</span><span class="p">))</span>
@@ -1464,10 +1505,10 @@ table {
 
     <span class="k">def</span> <span class="nf">__solve_null_spaces_for_flagged_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 
-        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span><span class="o">==</span><span class="bp">True</span><span class="p">,</span> <span class="s2">&quot; you need to select a variable&quot;</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span><span class="o">==</span><span class="bp">True</span><span class="p">,</span> <span class="s2">&quot; you need to select a variable to be explicit&quot;</span>
 
         <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_variable</span>
-        <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__syms_used</span><span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__fundamental_vars_used</span><span class="p">)</span>
 
         <span class="n">original_indicies</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
         <span class="n">all_idx</span> <span class="o">=</span> <span class="n">original_indicies</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -1522,6 +1563,44 @@ table {
             <span class="k">if</span> <span class="ow">not</span> <span class="n">already_exists</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__allpiterms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spacepiterms</span><span class="p">)</span>
 
+    <span class="k">def</span> <span class="nf">__rm_duplicated_powers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># this algorithm rely on the fact that the nullspace function</span>
+        <span class="c1"># in sympy set one free variable to 1 and the all other to zero</span>
+        <span class="c1"># then solve the system by back substitution.</span>
+        <span class="n">duplicate</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">dummy_other_terms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__allpiterms</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">num_set</span><span class="p">,</span> <span class="n">pi_set</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__allpiterms</span><span class="p">):</span>
+            <span class="n">dummy_other_terms</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">pi_set</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">num_other</span><span class="p">,</span> <span class="n">other</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">dummy_other_terms</span><span class="p">):</span>
+                <span class="n">permutations_sets</span> <span class="o">=</span> <span class="n">permutations</span><span class="p">(</span><span class="n">pi_set</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">p_set</span> <span class="ow">in</span> <span class="n">permutations_sets</span><span class="p">:</span>
+                    <span class="c1"># create a permutation vector from the permutation set</span>
+                    <span class="n">p_V</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Matrix</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">p_set</span><span class="p">))</span>
+                    <span class="c1"># create a vector from the other set of dimensionless groups that we are comparing to.</span>
+                    <span class="n">o_V</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">Matrix</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+                    <span class="c1"># create an element wise inverse of the vector of dimensionless groups</span>
+                    <span class="n">o_V_inv</span> <span class="o">=</span> <span class="n">o_V</span><span class="o">.</span><span class="n">applyfunc</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+                    <span class="n">result</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">matrix_multiply_elementwise</span><span class="p">(</span><span class="n">p_V</span><span class="p">,</span> <span class="n">o_V</span><span class="p">)</span>
+                    <span class="c1"># obtain the index of numerical value in the result vector.</span>
+                    <span class="c1"># numerical values indicates that one dimensionless group is the inverse of the other group</span>
+                    <span class="c1"># in this algorithm the numerical value will be equal to 1 (this is a result of the nullspace function in sympy)</span>
+                    <span class="n">idx_num_result</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p_set</span><span class="p">))</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="n">x</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="n">sp</span><span class="o">.</span><span class="n">Number</span><span class="p">)]</span>
+                    <span class="c1"># also repeat the multiplication with the inverse vector</span>
+                    <span class="n">result_inv</span> <span class="o">=</span> <span class="n">sp</span><span class="o">.</span><span class="n">matrix_multiply_elementwise</span><span class="p">(</span><span class="n">p_V</span><span class="p">,</span> <span class="n">o_V_inv</span><span class="p">)</span>
+                    <span class="c1"># check for the index of the numerical values in the result vector</span>
+                    <span class="n">idx_num_result_inv</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p_set</span><span class="p">))</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">result_inv</span><span class="p">[</span><span class="n">x</span><span class="p">,</span><span class="mi">0</span><span class="p">],</span><span class="n">sp</span><span class="o">.</span><span class="n">Number</span><span class="p">)]</span>
+                    <span class="c1"># concatinate the indices into one list</span>
+                    <span class="n">all_indices</span> <span class="o">=</span> <span class="n">idx_num_result</span> <span class="o">+</span> <span class="n">idx_num_result_inv</span>
+                    <span class="c1"># compare if the two vector are duplicates</span>
+                    <span class="k">if</span> <span class="nb">set</span><span class="p">(</span><span class="n">all_indices</span><span class="p">)</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p_set</span><span class="p">)))):</span>
+                        <span class="n">duplicate</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pi_set</span><span class="p">)</span>
+
+        <span class="c1"># remove duplicates from the main dict of all pi terms</span>
+        <span class="k">for</span> <span class="n">dup</span> <span class="ow">in</span> <span class="n">duplicate</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__allpiterms</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">dup</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">duplicate</span>
+
     <span class="k">def</span> <span class="nf">generate_pi_terms</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Generates all the possible pi terms</span>
@@ -1535,6 +1614,8 @@ table {
 
         <span class="bp">self</span><span class="o">.</span><span class="n">__construct_symbolic_pi_terms</span><span class="p">()</span>
 
+        <span class="bp">self</span><span class="o">.</span><span class="n">__rm_duplicated_powers</span><span class="p">()</span>
+
         <span class="k">return</span> <span class="bp">True</span>
 
     <span class="nd">@property</span>
@@ -1543,6 +1624,29 @@ table {
 <span class="sd">        :return: a list with all the symbolic dimensionless terms for all permutation of the dimensional Matrix M</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__allpiterms</span>
+
+
+    <span class="k">def</span> <span class="nf">print_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        print all the sets of dimensionless groups in latex form</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">latex_form</span> <span class="o">=</span><span class="p">[]</span>
+        <span class="k">for</span> <span class="n">pi_set</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__allpiterms</span><span class="p">:</span>
+            <span class="n">latex_set</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">pi</span> <span class="ow">in</span> <span class="n">pi_set</span><span class="p">:</span>
+                <span class="n">latex_set</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">latex</span><span class="p">(</span><span class="n">pi</span><span class="p">))</span>
+            <span class="n">latex_form</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">latex_set</span><span class="p">)</span>
+
+        <span class="n">num_of_pi_terms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">latex_form</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="n">headers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sets&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_of_pi_terms</span><span class="p">):</span>
+            <span class="n">headers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;Pi {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">num</span><span class="p">,</span><span class="nb">set</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">latex_form</span><span class="p">):</span>
+            <span class="nb">set</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">num</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="k">print</span><span class="p">(</span><span class="n">tabulate</span><span class="p">(</span><span class="n">latex_form</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">))</span>
 </pre></div>
 
   </div>
@@ -1573,16 +1677,13 @@ table {
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Construct an instance of the BuckinghamPi theorem</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">__all_physical_dimensions</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;a&#39;</span><span class="p">,</span><span class="s1">&#39;k&#39;</span><span class="p">,</span><span class="s1">&#39;t&#39;</span><span class="p">,</span><span class="s1">&#39;l&#39;</span><span class="p">,</span><span class="s1">&#39;m&#39;</span><span class="p">,</span><span class="s1">&#39;cd&#39;</span><span class="p">,</span><span class="s1">&#39;mol&#39;</span><span class="p">)</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">__physical_dimensions</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">:</span><span class="n">sp</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span>  <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__all_physical_dimensions</span><span class="p">}</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">__physical_dimensions_list</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">__physical_dimensions</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__physical_dimensions</span><span class="o">.</span><span class="n">keys</span><span class="p">()]</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">__var_from_idx</span><span class="o">=</span><span class="p">{}</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">__idx_from_var</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">__variables</span><span class="o">=</span><span class="p">{}</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">__sym_variables</span><span class="o">=</span><span class="p">{}</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;var_name&#39;</span><span class="p">:</span><span class="bp">None</span><span class="p">,</span> <span class="s1">&#39;var_index&#39;</span><span class="p">:</span><span class="bp">None</span><span class="p">,</span><span class="s1">&#39;selected&#39;</span><span class="p">:</span><span class="bp">False</span><span class="p">}</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">__null_spaces</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="bp">self</span><span class="o">.</span><span class="n">__syms_used</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># list of physical dimensions symbols</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">__fundamental_vars_used</span> <span class="o">=</span> <span class="p">[]</span> <span class="c1"># list of fundamental variables being used</span>
 </pre></div>
 
   </div>
@@ -1593,7 +1694,7 @@ table {
             
   <div class="item">
     <div class="name def" id="buckinghampi.BuckinghamPi.add_variable">
-    <p>def <span class="ident">add_variable</span>(</p><p>self, name, expression, select=False)</p>
+    <p>def <span class="ident">add_variable</span>(</p><p>self, name, expression, explicit=False)</p>
     </div>
     
 
@@ -1602,17 +1703,17 @@ table {
     <div class="desc"><p>Add variables to use for the pi-theorem
 :param name: (string) name of the variable to be added
 :param expression: (string) expression of the independent physical variable expressed in terms of the k independent physical units.
-:param select: (boolean) select a variable to only shows up in one single pi term per set of dimensionless terms.
+:param explicit: (boolean) select a variable to only shows up in one single pi term per set of dimensionless terms.
 :return: (Boolean) True if done perfectly</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-buckinghampi.BuckinghamPi.add_variable', this);">Show source &equiv;</a></p>
   <div id="source-buckinghampi.BuckinghamPi.add_variable" class="source">
-    <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">add_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">expression</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">select</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">add_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">expression</span><span class="p">:</span><span class="nb">str</span><span class="p">,</span> <span class="n">explicit</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Add variables to use for the pi-theorem</span>
 <span class="sd">    :param name: (string) name of the variable to be added</span>
 <span class="sd">    :param expression: (string) expression of the independent physical variable expressed in terms of the k independent physical units.</span>
-<span class="sd">    :param select: (boolean) select a variable to only shows up in one single pi term per set of dimensionless terms.</span>
+<span class="sd">    :param explicit: (boolean) select a variable to only shows up in one single pi term per set of dimensionless terms.</span>
 <span class="sd">    :return: (Boolean) True if done perfectly</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">expr</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">__parse_expression</span><span class="p">(</span><span class="n">expression</span><span class="p">)</span>
@@ -1620,12 +1721,12 @@ table {
     <span class="n">var_idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__variables</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="o">-</span><span class="mi">1</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">__var_from_idx</span><span class="p">[</span><span class="n">var_idx</span><span class="p">]</span><span class="o">=</span> <span class="n">name</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">__idx_from_var</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_idx</span>
-    <span class="k">if</span> <span class="n">select</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span><span class="o">==</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">explicit</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;var_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;var_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_idx</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
-    <span class="k">elif</span> <span class="n">select</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span><span class="o">==</span><span class="bp">True</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;you cannot select more than one variable at a time.&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">explicit</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">True</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;you cannot select more than one variable at a time to be explicit.&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="bp">True</span>
 </pre></div>
 
@@ -1657,7 +1758,45 @@ table {
     <span class="bp">self</span><span class="o">.</span><span class="n">__create_symbolic_variables</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">__solve_null_spaces</span><span class="p">()</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">__construct_symbolic_pi_terms</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">__rm_duplicated_powers</span><span class="p">()</span>
     <span class="k">return</span> <span class="bp">True</span>
+</pre></div>
+
+  </div>
+</div>
+
+  </div>
+  
+            
+  <div class="item">
+    <div class="name def" id="buckinghampi.BuckinghamPi.print_all">
+    <p>def <span class="ident">print_all</span>(</p><p>self)</p>
+    </div>
+    
+
+    
+  
+    <div class="desc"><p>print all the sets of dimensionless groups in latex form</p></div>
+  <div class="source_cont">
+  <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-buckinghampi.BuckinghamPi.print_all', this);">Show source &equiv;</a></p>
+  <div id="source-buckinghampi.BuckinghamPi.print_all" class="source">
+    <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">print_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    print all the sets of dimensionless groups in latex form</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">latex_form</span> <span class="o">=</span><span class="p">[]</span>
+    <span class="k">for</span> <span class="n">pi_set</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__allpiterms</span><span class="p">:</span>
+        <span class="n">latex_set</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">pi</span> <span class="ow">in</span> <span class="n">pi_set</span><span class="p">:</span>
+            <span class="n">latex_set</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">latex</span><span class="p">(</span><span class="n">pi</span><span class="p">))</span>
+        <span class="n">latex_form</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">latex_set</span><span class="p">)</span>
+    <span class="n">num_of_pi_terms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">latex_form</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">headers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sets&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_of_pi_terms</span><span class="p">):</span>
+        <span class="n">headers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;Pi {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">num</span><span class="p">,</span><span class="nb">set</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">latex_form</span><span class="p">):</span>
+        <span class="nb">set</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">num</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">tabulate</span><span class="p">(</span><span class="n">latex_form</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">))</span>
 </pre></div>
 
   </div>
@@ -1667,23 +1806,12 @@ table {
   
           <h3>Instance variables</h3>
             <div class="item">
-            <p id="buckinghampi.BuckinghamPi.all_physical_dimensions" class="name">var <span class="ident">all_physical_dimensions</span></p>
+            <p id="buckinghampi.BuckinghamPi.fundamental_variables" class="name">var <span class="ident">fundamental_variables</span></p>
             
 
             
   
-    <div class="desc"><p>:return: all possible physical dimensions. they are 7 in total:  ampere (a), kelvin (k), second (t), metre (l), kilogram (m), candela (cd) and mole (mol)</p></div>
-  <div class="source_cont">
-</div>
-
-            </div>
-            <div class="item">
-            <p id="buckinghampi.BuckinghamPi.physical_dimensions" class="name">var <span class="ident">physical_dimensions</span></p>
-            
-
-            
-  
-    <div class="desc"><p>:return: the physical dimensions being used</p></div>
+    <div class="desc"><p>:return: a list of the fundamental variables being used</p></div>
   <div class="source_cont">
 </div>
 
