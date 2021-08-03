@@ -1,5 +1,4 @@
 from buckinghampy.console import BuckinghamPi,sp
-import traceback
 try:
     import ipywidgets as widgets
     from ipywidgets import HBox, VBox, Layout, Box
@@ -7,15 +6,14 @@ try:
 except:
     pass
 
-def is_in_notebook():
-    rstk = traceback.extract_stack(limit=1)[0]
-    return rstk[0].startswith("<ipython")
 
 
 class BuckinghamPiGui(object):
 
     def __init__(self):
-        if is_in_notebook() == False:
+        import sys
+        inJupyter = sys.argv[-1].endswith('json')
+        if inJupyter == False:
             raise Exception("Cannot instantiate the class in a non jupyter cell!")
 
         self.continuousUpdate=True
