@@ -10,7 +10,7 @@ Python code that implements the Buckingham-Pi theorem and return all sets of dim
 ---
 Clone the package from the github repository into the current directory
 ```buildoutcfg
-git clone https://github.com/saadgroup/BuckinghamPi.git . 
+git clone https://github.com/saadgroup/BuckinghamPy.git . 
 ```
 Use `pip` tool to install the package in the active python evironment
 ```buildoutcfg
