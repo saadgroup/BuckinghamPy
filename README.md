@@ -17,16 +17,25 @@ Use `pip` tool to install the package in the active python evironment
 pip install .
 ```
 ## Example
-Now you can import the module and use it as follows
+
+Consider a fluid with density R and viscosity V, pumped in a centrifugal pump with power input P, a volume flow rate Q, an impeller diameter E, and a rotational rate G.
+
+The homogeneous function that relates all these variables is: f(R, V, P, Q, E, G) = 0 
+  
+Using the fundamental units (M, L, T), find all the sets of dimensionless terms with the power input P being part of only one dimensionless term per set.  
+
+Using BuckinghamPy, we execute the following code:
+
 ```buildoutcfg
 from buckinghampy import BuckinghamPi
 
 Example = BuckinghamPi()
-Example.add_variable(name='u', expression='l/t')
-Example.add_variable(name='rho', expression='m/(l**3)')
-Example.add_variable(name='mu', expression='m/(t*l)')
-Example.add_variable(name='dx', expression='l')
-Example.add_variable(name='dt', expression='t', explicit=True)
+Example.add_variable(name='R', expression='M/L^(3)')
+Example.add_variable(name='P', expression='M*L^(2)/(T^3)', explicit=True)
+Example.add_variable(name='V', expression='M/(T*L)')
+Example.add_variable(name='Q', expression='L^(3)/T')
+Example.add_variable(name='E', expression='L')
+Example.add_variable(name='G', expression='1/T')
 
 Example.generate_pi_terms()
 
