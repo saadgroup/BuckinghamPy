@@ -239,7 +239,6 @@ class BuckinghamPi:
     def generate_pi_terms(self):
         '''
         Generates all the possible pi terms
-        :return: Boolean true if done perfectly
         '''
         self.__create_M()
 
