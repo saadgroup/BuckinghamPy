@@ -1,13 +1,13 @@
 """buckinghampi.py: a symbolic module that generates the pi terms based on some variables by applying the pi-theorem."""
 
 __author__ = "Mokbel Karam"
-__copyright__ = "Copyright (c) 2020, Mokbel Karam"
+__copyright__ = "Copyright (c) 2021, Mokbel Karam"
 
 __credits__ = ["University of Utah Department of Chemical Engineering"]
-__license__ = "Apache 2.0"
-__version__ = "0.1.2"
+__license__ = "MIT"
+__version__ = "1.0.3"
 __maintainer__ = "Mokbel Karam"
-__email__ = "mokbel.karam@chemeng.utah.edu"
+__email__ = "karammokbel@gmail.com"
 __status__ = "Production"
 
 import sympy as sp
