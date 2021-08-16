@@ -176,7 +176,7 @@ class BuckinghamPiGui(object):
     def generate_solution(self):
         problem = BuckinghamPi()
         for varname in self.data['vars'].keys():
-            problem.add_variable(name=varname, expression=self.data['vars'][varname]['units'],
+            problem.add_variable(name=varname, units=self.data['vars'][varname]['units'],
                                  explicit=self.data['vars'][varname]['explicit'])
         problem.generate_pi_terms()
         self.data['sol'] = problem.pi_terms

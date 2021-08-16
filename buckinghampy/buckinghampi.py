@@ -87,15 +87,14 @@ class BuckinghamPi:
 
         return vect
 
-    def add_variable(self, name:str, expression:str, explicit=False):
+    def add_variable(self, name: str, units: str, explicit=False):
         '''
         Add variables to use for the pi-theorem
         :param name: (string) name of the variable to be added
-        :param expression: (string) expression of the independent physical variable expressed in terms of the k independent physical units.
+        :param units: (string) expression of the independent physical variable expressed in terms of the k independent fundamental units.
         :param explicit: (boolean) select a variable to only shows up in one single pi term per set of dimensionless terms.
-        :return: (Boolean) True if done perfectly
         '''
-        expr =  self.__parse_expression(expression)
+        expr =  self.__parse_expression(units)
         self.__variables.update({name:expr})
         var_idx = len(list(self.__variables.keys()))-1
         self.__var_from_idx[var_idx]= name
