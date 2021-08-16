@@ -1,13 +1,13 @@
 """buckinghampi.py: a symbolic module that generates the pi terms based on some variables by applying the pi-theorem."""
 
 __author__ = "Mokbel Karam"
-__copyright__ = "Copyright (c) 2020, Mokbel Karam"
+__copyright__ = "Copyright (c) 2021, Mokbel Karam"
 
 __credits__ = ["University of Utah Department of Chemical Engineering"]
-__license__ = "Apache 2.0"
-__version__ = "0.1.2"
+__license__ = "MIT"
+__version__ = "1.0.3"
 __maintainer__ = "Mokbel Karam"
-__email__ = "mokbel.karam@chemeng.utah.edu"
+__email__ = "karammokbel@gmail.com"
 __status__ = "Production"
 
 import sympy as sp
@@ -87,15 +87,14 @@ class BuckinghamPi:
 
         return vect
 
-    def add_variable(self, name:str, expression:str, explicit=False):
+    def add_variable(self, name: str, units: str, explicit=False):
         '''
         Add variables to use for the pi-theorem
         :param name: (string) name of the variable to be added
-        :param expression: (string) expression of the independent physical variable expressed in terms of the k independent physical units.
+        :param units: (string) expression of the independent physical variable expressed in terms of the k independent fundamental units.
         :param explicit: (boolean) select a variable to only shows up in one single pi term per set of dimensionless terms.
-        :return: (Boolean) True if done perfectly
         '''
-        expr =  self.__parse_expression(expression)
+        expr =  self.__parse_expression(units)
         self.__variables.update({name:expr})
         var_idx = len(list(self.__variables.keys()))-1
         self.__var_from_idx[var_idx]= name
@@ -106,8 +105,6 @@ class BuckinghamPi:
             self.__flagged_var['selected'] = True
         elif explicit and (self.__flagged_var['selected'] == True):
             raise Exception("you cannot select more than one variable at a time to be explicit.")
-
-        return True
 
     def __create_M(self):
         self.num_variable = len(list(self.__variables.keys()))
@@ -242,7 +239,6 @@ class BuckinghamPi:
     def generate_pi_terms(self):
         '''
         Generates all the possible pi terms
-        :return: Boolean true if done perfectly
         '''
         self.__create_M()
 
@@ -253,8 +249,6 @@ class BuckinghamPi:
         self.__construct_symbolic_pi_terms()
 
         self.__rm_duplicated_powers()
-
-        return True
 
     @property
     def pi_terms(self):
