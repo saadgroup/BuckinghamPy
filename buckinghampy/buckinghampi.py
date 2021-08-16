@@ -106,8 +106,6 @@ class BuckinghamPi:
         elif explicit and (self.__flagged_var['selected'] == True):
             raise Exception("you cannot select more than one variable at a time to be explicit.")
 
-        return True
-
     def __create_M(self):
         self.num_variable = len(list(self.__variables.keys()))
         num_physical_dimensions = len(self.__fundamental_vars_used)
@@ -252,8 +250,6 @@ class BuckinghamPi:
         self.__construct_symbolic_pi_terms()
 
         self.__rm_duplicated_powers()
-
-        return True
 
     @property
     def pi_terms(self):
