@@ -18,6 +18,11 @@ import numpy as np
 from itertools import combinations,permutations
 from tabulate import tabulate
 
+try:
+    from IPython.display import display, clear_output, Math, Markdown
+except:
+    pass
+
 class BuckinghamPi:
     def __init__(self):
         '''
@@ -258,24 +263,51 @@ class BuckinghamPi:
         return self.__allpiterms
 
 
-    def print_all(self):
-        '''
-        print all the sets of dimensionless groups in latex form
-        '''
-        latex_form =[]
+    def __Jupyter_print(self):
+        ''' print the rendered Latex format in Jupyter cell'''
+        for set_num, space in enumerate(self.__allpiterms):
+            latex_str= '\\text{Set }'
+            latex_str+='{}: \\quad'.format(set_num+1)
+            for num, term in enumerate(space):
+                latex_str += '\\pi_{} = '.format(num+1)+sp.latex(term)
+                latex_str += '\\quad'
+            display(Math(latex_str))
+            display(Markdown('---'))
+
+    def __tabulate_print(self,latex_string=False):
+        ''' print the dimensionless sets in a tabulated format'''
+
+        latex_form = []
         for pi_set in self.__allpiterms:
             latex_set = []
             for pi in pi_set:
-                latex_set.append(sp.latex(pi))
+                if latex_string:
+                    if latex_string:
+                        latex_set.append(sp.latex(pi))
+                    else:
+                        latex_set.append(pi)
+                else:
+                    latex_set.append(pi)
             latex_form.append(latex_set)
 
         num_of_pi_terms = len(latex_form[0])
 
         headers = ['sets']
         for num in range(num_of_pi_terms):
-            headers.append('Pi {}'.format(num+1))
+            headers.append('Pi {}'.format(num + 1))
 
-        for num,set in enumerate(latex_form):
-            set.insert(0,num+1)
+        for num, set in enumerate(latex_form):
+            set.insert(0, num + 1)
 
         print(tabulate(latex_form, headers=headers))
+
+    def print_all(self, latex_string=False):
+        '''
+        print all the sets of dimensionless groups in latex form
+        '''
+        try:
+            ''' Try to render the latex in Jupyter cell'''
+            self.__Jupyter_print()
+        except:
+            ''' print the dimensionless sets in a tabulated format when in terminal session'''
+            self.__tabulate_print(latex_string)
