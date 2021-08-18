@@ -1095,6 +1095,11 @@ table {
 <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">combinations</span><span class="p">,</span><span class="n">permutations</span>
 <span class="kn">from</span> <span class="nn">tabulate</span> <span class="kn">import</span> <span class="n">tabulate</span>
 
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">display</span><span class="p">,</span> <span class="n">clear_output</span><span class="p">,</span> <span class="n">Math</span><span class="p">,</span> <span class="n">Markdown</span>
+<span class="k">except</span><span class="p">:</span>
+    <span class="k">pass</span>
+
 <span class="k">class</span> <span class="nc">BuckinghamPi</span><span class="p">:</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
@@ -1335,27 +1340,57 @@ table {
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__allpiterms</span>
 
 
-    <span class="k">def</span> <span class="nf">print_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">        print all the sets of dimensionless groups in latex form</span>
-<span class="sd">        &#39;&#39;&#39;</span>
-        <span class="n">latex_form</span> <span class="o">=</span><span class="p">[]</span>
+    <span class="k">def</span> <span class="nf">__Jupyter_print</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; print the rendered Latex format in Jupyter cell&#39;&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">set_num</span><span class="p">,</span> <span class="n">space</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__allpiterms</span><span class="p">):</span>
+            <span class="n">latex_str</span><span class="o">=</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">text{Set }&#39;</span>
+            <span class="n">latex_str</span><span class="o">+=</span><span class="s1">&#39;{}: </span><span class="se">\\</span><span class="s1">quad&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">set_num</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">num</span><span class="p">,</span> <span class="n">term</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">space</span><span class="p">):</span>
+                <span class="n">latex_str</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">pi_{} = &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="n">sp</span><span class="o">.</span><span class="n">latex</span><span class="p">(</span><span class="n">term</span><span class="p">)</span>
+                <span class="n">latex_str</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">quad&#39;</span>
+            <span class="n">display</span><span class="p">(</span><span class="n">Math</span><span class="p">(</span><span class="n">latex_str</span><span class="p">))</span>
+            <span class="n">display</span><span class="p">(</span><span class="n">Markdown</span><span class="p">(</span><span class="s1">&#39;---&#39;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__tabulate_print</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">latex_string</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; print the dimensionless sets in a tabulated format&#39;&#39;&#39;</span>
+
+        <span class="n">latex_form</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">pi_set</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__allpiterms</span><span class="p">:</span>
             <span class="n">latex_set</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">pi</span> <span class="ow">in</span> <span class="n">pi_set</span><span class="p">:</span>
-                <span class="n">latex_set</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">latex</span><span class="p">(</span><span class="n">pi</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">latex_string</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">latex_string</span><span class="p">:</span>
+                        <span class="n">latex_set</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">latex</span><span class="p">(</span><span class="n">pi</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">latex_set</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pi</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">latex_set</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pi</span><span class="p">)</span>
             <span class="n">latex_form</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">latex_set</span><span class="p">)</span>
 
         <span class="n">num_of_pi_terms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">latex_form</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
         <span class="n">headers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sets&#39;</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_of_pi_terms</span><span class="p">):</span>
-            <span class="n">headers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;Pi {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">headers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;Pi {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
 
-        <span class="k">for</span> <span class="n">num</span><span class="p">,</span><span class="nb">set</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">latex_form</span><span class="p">):</span>
-            <span class="nb">set</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">num</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">num</span><span class="p">,</span> <span class="nb">set</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">latex_form</span><span class="p">):</span>
+            <span class="nb">set</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="k">print</span><span class="p">(</span><span class="n">tabulate</span><span class="p">(</span><span class="n">latex_form</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">print_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">latex_string</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        print all the sets of dimensionless groups in latex or symbolic form.</span>
+<span class="sd">        :latex_string: optional boolean. If set to True the function will print the latex string of the</span>
+<span class="sd">                        dimensionless groups. if set to False the function will print the symbolic form of the</span>
+<span class="sd">                        dimensionless groups.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="sd">&#39;&#39;&#39; Try to render the latex in Jupyter cell&#39;&#39;&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__Jupyter_print</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="sd">&#39;&#39;&#39; print the dimensionless sets in a tabulated format when in terminal session&#39;&#39;&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__tabulate_print</span><span class="p">(</span><span class="n">latex_string</span><span class="p">)</span>
 </pre></div>
 
   </div>
@@ -1614,27 +1649,57 @@ table {
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__allpiterms</span>
 
 
-    <span class="k">def</span> <span class="nf">print_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">        print all the sets of dimensionless groups in latex form</span>
-<span class="sd">        &#39;&#39;&#39;</span>
-        <span class="n">latex_form</span> <span class="o">=</span><span class="p">[]</span>
+    <span class="k">def</span> <span class="nf">__Jupyter_print</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; print the rendered Latex format in Jupyter cell&#39;&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">set_num</span><span class="p">,</span> <span class="n">space</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__allpiterms</span><span class="p">):</span>
+            <span class="n">latex_str</span><span class="o">=</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">text{Set }&#39;</span>
+            <span class="n">latex_str</span><span class="o">+=</span><span class="s1">&#39;{}: </span><span class="se">\\</span><span class="s1">quad&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">set_num</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">num</span><span class="p">,</span> <span class="n">term</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">space</span><span class="p">):</span>
+                <span class="n">latex_str</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">pi_{} = &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="n">sp</span><span class="o">.</span><span class="n">latex</span><span class="p">(</span><span class="n">term</span><span class="p">)</span>
+                <span class="n">latex_str</span> <span class="o">+=</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">quad&#39;</span>
+            <span class="n">display</span><span class="p">(</span><span class="n">Math</span><span class="p">(</span><span class="n">latex_str</span><span class="p">))</span>
+            <span class="n">display</span><span class="p">(</span><span class="n">Markdown</span><span class="p">(</span><span class="s1">&#39;---&#39;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">__tabulate_print</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">latex_string</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39; print the dimensionless sets in a tabulated format&#39;&#39;&#39;</span>
+
+        <span class="n">latex_form</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">pi_set</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__allpiterms</span><span class="p">:</span>
             <span class="n">latex_set</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="k">for</span> <span class="n">pi</span> <span class="ow">in</span> <span class="n">pi_set</span><span class="p">:</span>
-                <span class="n">latex_set</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">latex</span><span class="p">(</span><span class="n">pi</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">latex_string</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">latex_string</span><span class="p">:</span>
+                        <span class="n">latex_set</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">latex</span><span class="p">(</span><span class="n">pi</span><span class="p">))</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">latex_set</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pi</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">latex_set</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pi</span><span class="p">)</span>
             <span class="n">latex_form</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">latex_set</span><span class="p">)</span>
 
         <span class="n">num_of_pi_terms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">latex_form</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
         <span class="n">headers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sets&#39;</span><span class="p">]</span>
         <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_of_pi_terms</span><span class="p">):</span>
-            <span class="n">headers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;Pi {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">headers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;Pi {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
 
-        <span class="k">for</span> <span class="n">num</span><span class="p">,</span><span class="nb">set</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">latex_form</span><span class="p">):</span>
-            <span class="nb">set</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">num</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">num</span><span class="p">,</span> <span class="nb">set</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">latex_form</span><span class="p">):</span>
+            <span class="nb">set</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
 
         <span class="k">print</span><span class="p">(</span><span class="n">tabulate</span><span class="p">(</span><span class="n">latex_form</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">print_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">latex_string</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        print all the sets of dimensionless groups in latex or symbolic form.</span>
+<span class="sd">        :latex_string: optional boolean. If set to True the function will print the latex string of the</span>
+<span class="sd">                        dimensionless groups. if set to False the function will print the symbolic form of the</span>
+<span class="sd">                        dimensionless groups.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="sd">&#39;&#39;&#39; Try to render the latex in Jupyter cell&#39;&#39;&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__Jupyter_print</span><span class="p">()</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="sd">&#39;&#39;&#39; print the dimensionless sets in a tabulated format when in terminal session&#39;&#39;&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__tabulate_print</span><span class="p">(</span><span class="n">latex_string</span><span class="p">)</span>
 </pre></div>
 
   </div>
@@ -1752,33 +1817,32 @@ table {
             
   <div class="item">
     <div class="name def" id="buckinghampi.BuckinghamPi.print_all">
-    <p>def <span class="ident">print_all</span>(</p><p>self)</p>
+    <p>def <span class="ident">print_all</span>(</p><p>self, latex_string=False)</p>
     </div>
     
 
     
   
-    <div class="desc"><p>print all the sets of dimensionless groups in latex form</p></div>
+    <div class="desc"><p>print all the sets of dimensionless groups in latex or symbolic form.
+:latex_string: optional boolean. If set to True the function will print the latex string of the
+                dimensionless groups. if set to False the function will print the symbolic form of the
+                dimensionless groups.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-buckinghampi.BuckinghamPi.print_all', this);">Show source &equiv;</a></p>
   <div id="source-buckinghampi.BuckinghamPi.print_all" class="source">
-    <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">print_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">print_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">latex_string</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    print all the sets of dimensionless groups in latex form</span>
+<span class="sd">    print all the sets of dimensionless groups in latex or symbolic form.</span>
+<span class="sd">    :latex_string: optional boolean. If set to True the function will print the latex string of the</span>
+<span class="sd">                    dimensionless groups. if set to False the function will print the symbolic form of the</span>
+<span class="sd">                    dimensionless groups.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">latex_form</span> <span class="o">=</span><span class="p">[]</span>
-    <span class="k">for</span> <span class="n">pi_set</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__allpiterms</span><span class="p">:</span>
-        <span class="n">latex_set</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">pi</span> <span class="ow">in</span> <span class="n">pi_set</span><span class="p">:</span>
-            <span class="n">latex_set</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sp</span><span class="o">.</span><span class="n">latex</span><span class="p">(</span><span class="n">pi</span><span class="p">))</span>
-        <span class="n">latex_form</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">latex_set</span><span class="p">)</span>
-    <span class="n">num_of_pi_terms</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">latex_form</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
-    <span class="n">headers</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sets&#39;</span><span class="p">]</span>
-    <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_of_pi_terms</span><span class="p">):</span>
-        <span class="n">headers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;Pi {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">num</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
-    <span class="k">for</span> <span class="n">num</span><span class="p">,</span><span class="nb">set</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">latex_form</span><span class="p">):</span>
-        <span class="nb">set</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">num</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">print</span><span class="p">(</span><span class="n">tabulate</span><span class="p">(</span><span class="n">latex_form</span><span class="p">,</span> <span class="n">headers</span><span class="o">=</span><span class="n">headers</span><span class="p">))</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="sd">&#39;&#39;&#39; Try to render the latex in Jupyter cell&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__Jupyter_print</span><span class="p">()</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="sd">&#39;&#39;&#39; print the dimensionless sets in a tabulated format when in terminal session&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__tabulate_print</span><span class="p">(</span><span class="n">latex_string</span><span class="p">)</span>
 </pre></div>
 
   </div>

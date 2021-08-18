@@ -303,7 +303,10 @@ class BuckinghamPi:
 
     def print_all(self, latex_string=False):
         '''
-        print all the sets of dimensionless groups in latex form
+        print all the sets of dimensionless groups in latex or symbolic form.
+        :latex_string: optional boolean. If set to True the function will print the latex string of the
+                        dimensionless groups. if set to False the function will print the symbolic form of the
+                        dimensionless groups.
         '''
         try:
             ''' Try to render the latex in Jupyter cell'''
