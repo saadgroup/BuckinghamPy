@@ -92,24 +92,25 @@ class BuckinghamPi:
 
         return vect
 
-    def add_variable(self, name: str, units: str, explicit=False):
+    def add_variable(self, name: str, units: str, non_repeating=False):
         '''
         Add variables to use for the pi-theorem
         :param name: (string) name of the variable to be added
         :param units: (string) expression of the independent physical variable expressed in terms of the k independent fundamental units.
-        :param explicit: (boolean) select a variable to only shows up in one single pi term per set of dimensionless terms.
+        :param non_repeating: (boolean) select a variable to belong to the non_repeating matrix. This will ensure that the selected variable
+                                        only shows up in one dimensionless group.
         '''
         expr =  self.__parse_expression(units)
         self.__variables.update({name:expr})
         var_idx = len(list(self.__variables.keys()))-1
         self.__var_from_idx[var_idx]= name
         self.__idx_from_var[name] = var_idx
-        if explicit and (self.__flagged_var['selected'] == False):
+        if non_repeating and (self.__flagged_var['selected'] == False):
             self.__flagged_var['var_name'] = name
             self.__flagged_var['var_index'] = var_idx
             self.__flagged_var['selected'] = True
-        elif explicit and (self.__flagged_var['selected'] == True):
-            raise Exception("you cannot select more than one variable at a time to be explicit.")
+        elif non_repeating and (self.__flagged_var['selected'] == True):
+            raise Exception("you cannot select more than one variable at a time to be a non_repeating.")
 
     def __create_M(self):
         self.num_variable = len(list(self.__variables.keys()))

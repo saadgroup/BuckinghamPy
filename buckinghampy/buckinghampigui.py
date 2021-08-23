@@ -69,7 +69,7 @@ class BuckinghamPiGui(object):
         setattr(self, 'var_select_{}'.format(idx),
                 widgets.Checkbox(
                     value=False,
-                    description='Explicit')
+                    description='Non-repeating')
                 )
 
         box_layout = Layout(display='flex',
@@ -171,13 +171,13 @@ class BuckinghamPiGui(object):
             var_units = getattr(self, 'var_units_{}'.format(idx)).value
             var_select = getattr(self, 'var_select_{}'.format(idx)).value
 
-            self.data['vars'][var_name] = {'units':var_units,'explicit':var_select}
+            self.data['vars'][var_name] = {'units':var_units,'non_repeating':var_select}
 
     def generate_solution(self):
         problem = BuckinghamPi()
         for varname in self.data['vars'].keys():
             problem.add_variable(name=varname, units=self.data['vars'][varname]['units'],
-                                 explicit=self.data['vars'][varname]['explicit'])
+                                 non_repeating=self.data['vars'][varname]['non_repeating'])
         problem.generate_pi_terms()
         self.data['sol'] = problem.pi_terms
 

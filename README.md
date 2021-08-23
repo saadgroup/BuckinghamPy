@@ -31,7 +31,7 @@ from buckinghampy import BuckinghamPi
 
 Example = BuckinghamPi()
 Example.add_variable(name='R', units='M/L^(3)')
-Example.add_variable(name='P', units='M*L^(2)/(T^3)', explicit=True)
+Example.add_variable(name='P', units='M*L^(2)/(T^3)', non_repeating=True)
 Example.add_variable(name='V', units='M/(T*L)')
 Example.add_variable(name='Q', units='L^(3)/T')
 Example.add_variable(name='E', units='L')
