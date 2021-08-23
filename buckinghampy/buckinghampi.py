@@ -97,7 +97,7 @@ class BuckinghamPi:
         Add variables to use for the pi-theorem
         :param name: (string) name of the variable to be added
         :param units: (string) expression of the independent physical variable expressed in terms of the k independent fundamental units.
-        :param non_repeating: (boolean) select a variable to belong to the non_repeating matrix. This will ensure that the selected variable
+        :param non_repeating: (boolean) select a variable to belong to the non-repeating variables matrix. This will ensure that the selected variable
                                         only shows up in one dimensionless group.
         '''
         expr =  self.__parse_expression(units)
