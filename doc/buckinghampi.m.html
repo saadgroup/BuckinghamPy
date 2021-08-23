@@ -1169,24 +1169,25 @@ table {
 
         <span class="k">return</span> <span class="n">vect</span>
 
-    <span class="k">def</span> <span class="nf">add_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">explicit</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">add_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">non_repeating</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Add variables to use for the pi-theorem</span>
 <span class="sd">        :param name: (string) name of the variable to be added</span>
 <span class="sd">        :param units: (string) expression of the independent physical variable expressed in terms of the k independent fundamental units.</span>
-<span class="sd">        :param explicit: (boolean) select a variable to only shows up in one single pi term per set of dimensionless terms.</span>
+<span class="sd">        :param non_repeating: (boolean) select a variable to belong to the non_repeating matrix. This will ensure that the selected variable</span>
+<span class="sd">                                        only shows up in one dimensionless group.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="n">expr</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">__parse_expression</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__variables</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">name</span><span class="p">:</span><span class="n">expr</span><span class="p">})</span>
         <span class="n">var_idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__variables</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="o">-</span><span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__var_from_idx</span><span class="p">[</span><span class="n">var_idx</span><span class="p">]</span><span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__idx_from_var</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_idx</span>
-        <span class="k">if</span> <span class="n">explicit</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">non_repeating</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">False</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;var_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;var_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_idx</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
-        <span class="k">elif</span> <span class="n">explicit</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">True</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;you cannot select more than one variable at a time to be explicit.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">non_repeating</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">True</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;you cannot select more than one variable at a time to be a non_repeating.&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__create_M</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_variable</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__variables</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
@@ -1478,24 +1479,25 @@ table {
 
         <span class="k">return</span> <span class="n">vect</span>
 
-    <span class="k">def</span> <span class="nf">add_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">explicit</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">add_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">non_repeating</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Add variables to use for the pi-theorem</span>
 <span class="sd">        :param name: (string) name of the variable to be added</span>
 <span class="sd">        :param units: (string) expression of the independent physical variable expressed in terms of the k independent fundamental units.</span>
-<span class="sd">        :param explicit: (boolean) select a variable to only shows up in one single pi term per set of dimensionless terms.</span>
+<span class="sd">        :param non_repeating: (boolean) select a variable to belong to the non_repeating matrix. This will ensure that the selected variable</span>
+<span class="sd">                                        only shows up in one dimensionless group.</span>
 <span class="sd">        &#39;&#39;&#39;</span>
         <span class="n">expr</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">__parse_expression</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__variables</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">name</span><span class="p">:</span><span class="n">expr</span><span class="p">})</span>
         <span class="n">var_idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__variables</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="o">-</span><span class="mi">1</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__var_from_idx</span><span class="p">[</span><span class="n">var_idx</span><span class="p">]</span><span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__idx_from_var</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_idx</span>
-        <span class="k">if</span> <span class="n">explicit</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">False</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">non_repeating</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">False</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;var_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;var_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_idx</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
-        <span class="k">elif</span> <span class="n">explicit</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">True</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;you cannot select more than one variable at a time to be explicit.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">non_repeating</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">True</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;you cannot select more than one variable at a time to be a non_repeating.&quot;</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">__create_M</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">num_variable</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__variables</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
@@ -1747,7 +1749,7 @@ table {
             
   <div class="item">
     <div class="name def" id="buckinghampi.BuckinghamPi.add_variable">
-    <p>def <span class="ident">add_variable</span>(</p><p>self, name, units, explicit=False)</p>
+    <p>def <span class="ident">add_variable</span>(</p><p>self, name, units, non_repeating=False)</p>
     </div>
     
 
@@ -1756,28 +1758,30 @@ table {
     <div class="desc"><p>Add variables to use for the pi-theorem
 :param name: (string) name of the variable to be added
 :param units: (string) expression of the independent physical variable expressed in terms of the k independent fundamental units.
-:param explicit: (boolean) select a variable to only shows up in one single pi term per set of dimensionless terms.</p></div>
+:param non_repeating: (boolean) select a variable to belong to the non_repeating matrix. This will ensure that the selected variable
+                                only shows up in one dimensionless group.</p></div>
   <div class="source_cont">
   <p class="source_link"><a href="javascript:void(0);" onclick="toggle('source-buckinghampi.BuckinghamPi.add_variable', this);">Show source &equiv;</a></p>
   <div id="source-buckinghampi.BuckinghamPi.add_variable" class="source">
-    <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">add_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">explicit</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+    <div class="codehilite"><pre><span></span><span class="k">def</span> <span class="nf">add_variable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">units</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">non_repeating</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
     <span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Add variables to use for the pi-theorem</span>
 <span class="sd">    :param name: (string) name of the variable to be added</span>
 <span class="sd">    :param units: (string) expression of the independent physical variable expressed in terms of the k independent fundamental units.</span>
-<span class="sd">    :param explicit: (boolean) select a variable to only shows up in one single pi term per set of dimensionless terms.</span>
+<span class="sd">    :param non_repeating: (boolean) select a variable to belong to the non_repeating matrix. This will ensure that the selected variable</span>
+<span class="sd">                                    only shows up in one dimensionless group.</span>
 <span class="sd">    &#39;&#39;&#39;</span>
     <span class="n">expr</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">__parse_expression</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">__variables</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">name</span><span class="p">:</span><span class="n">expr</span><span class="p">})</span>
     <span class="n">var_idx</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__variables</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span><span class="o">-</span><span class="mi">1</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">__var_from_idx</span><span class="p">[</span><span class="n">var_idx</span><span class="p">]</span><span class="o">=</span> <span class="n">name</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">__idx_from_var</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_idx</span>
-    <span class="k">if</span> <span class="n">explicit</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">False</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">non_repeating</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">False</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;var_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;var_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">var_idx</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">True</span>
-    <span class="k">elif</span> <span class="n">explicit</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">True</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;you cannot select more than one variable at a time to be explicit.&quot;</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">non_repeating</span> <span class="ow">and</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__flagged_var</span><span class="p">[</span><span class="s1">&#39;selected&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="bp">True</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;you cannot select more than one variable at a time to be a non_repeating.&quot;</span><span class="p">)</span>
 </pre></div>
 
   </div>
