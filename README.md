@@ -41,6 +41,8 @@ Example.generate_pi_terms()
 
 Example.print_all()
 ```
+![Latex Rendered Results](doc/readme_result.png)
+
 or you can import the graphic user interface only in a Jupyter cell
 ```buildoutcfg
 from buckinghampy import BuckinghamPiGui
