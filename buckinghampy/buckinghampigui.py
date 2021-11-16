@@ -59,10 +59,10 @@ class BuckinghamPiGui(object):
                     layout=self.txt_box_layout),
                 )
 
-        setattr(self, 'var_units_{}'.format(idx),
+        setattr(self, 'var_dimensions_{}'.format(idx),
                 widgets.Textarea(
-                    placeholder='var units',
-                    description='Units:',
+                    placeholder='var dimensions',
+                    description='Dimensions:',
                     layout=self.txt_box_layout)
                 )
 
@@ -77,7 +77,7 @@ class BuckinghamPiGui(object):
                             align_items='flex-start',
                             # border='solid',
                             width='auto')
-        items = [getattr(self, 'var_name_{}'.format(idx)), getattr(self, 'var_units_{}'.format(idx)), getattr(self, 'var_select_{}'.format(idx))]
+        items = [getattr(self, 'var_name_{}'.format(idx)), getattr(self, 'var_dimensions_{}'.format(idx)), getattr(self, 'var_select_{}'.format(idx))]
         box = Box(children=items, layout=box_layout)
 
 
@@ -103,7 +103,7 @@ class BuckinghamPiGui(object):
             del self.children_vbox[-1]
             delattr(self,'var_{}'.format(counter))
             delattr(self, 'var_name_{}'.format(counter))
-            delattr(self, 'var_units_{}'.format(counter))
+            delattr(self, 'var_dimensions_{}'.format(counter))
             delattr(self,'var_select_{}'.format(counter))
             counter -= 1
 
@@ -168,15 +168,15 @@ class BuckinghamPiGui(object):
         self.data['vars'] ={}
         for idx in range(1,var_num+1):
             var_name = getattr(self, 'var_name_{}'.format(idx)).value
-            var_units = getattr(self, 'var_units_{}'.format(idx)).value
+            var_dimensions = getattr(self, 'var_dimensions_{}'.format(idx)).value
             var_select = getattr(self, 'var_select_{}'.format(idx)).value
 
-            self.data['vars'][var_name] = {'units':var_units,'non_repeating':var_select}
+            self.data['vars'][var_name] = {'dimensions':var_dimensions,'non_repeating':var_select}
 
     def generate_solution(self):
         problem = BuckinghamPi()
         for varname in self.data['vars'].keys():
-            problem.add_variable(name=varname, units=self.data['vars'][varname]['units'],
+            problem.add_variable(name=varname, dimensions=self.data['vars'][varname]['dimensions'],
                                  non_repeating=self.data['vars'][varname]['non_repeating'])
         problem.generate_pi_terms()
         self.data['sol'] = problem.pi_terms

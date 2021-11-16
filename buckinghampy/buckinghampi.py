@@ -65,7 +65,7 @@ class BuckinghamPi:
         if expr.as_coeff_Mul()[0] != 1:
             raise Exception('cannot have coefficients, {}, that multiply the expression {}'.format(expr.as_coeff_Mul()[0],expr.as_coeff_Mul()[1]))
 
-        #extract the physical dimensions from the units expressions
+        #extract the physical dimensions from the dimensions expressions
         used_symbols = list(expr.free_symbols)
         for sym in used_symbols:
             if not sym in self.__fundamental_vars_used:
@@ -92,15 +92,15 @@ class BuckinghamPi:
 
         return vect
 
-    def add_variable(self, name: str, units: str, non_repeating=False):
+    def add_variable(self, name: str, dimensions: str, non_repeating=False):
         '''
         Add variables to use for the pi-theorem
         :param name: (string) name of the variable to be added
-        :param units: (string) expression of the independent physical variable expressed in terms of the k independent fundamental units.
+        :param dimensions: (string) expression of the independent physical variable expressed in terms of the k independent fundamental dimensions.
         :param non_repeating: (boolean) select a variable to belong to the non-repeating variables matrix. This will ensure that the selected variable
                                         only shows up in one dimensionless group.
         '''
-        expr =  self.__parse_expression(units)
+        expr =  self.__parse_expression(dimensions)
         self.__variables.update({name:expr})
         var_idx = len(list(self.__variables.keys()))-1
         self.__var_from_idx[var_idx]= name
