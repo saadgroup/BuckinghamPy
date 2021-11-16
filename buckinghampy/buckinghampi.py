@@ -38,6 +38,8 @@ class BuckinghamPi:
 
         self.__fundamental_vars_used = [] # list of fundamental variables being used
 
+        self.__prefixed_dimensionless_terms = []
+
     @property
     def fundamental_variables(self):
         '''
@@ -65,7 +67,7 @@ class BuckinghamPi:
         if expr.as_coeff_Mul()[0] != 1:
             raise Exception('cannot have coefficients, {}, that multiply the expression {}'.format(expr.as_coeff_Mul()[0],expr.as_coeff_Mul()[1]))
 
-        #extract the physical dimensions from the units expressions
+        #extract the physical dimensions from the dimensions expressions
         used_symbols = list(expr.free_symbols)
         for sym in used_symbols:
             if not sym in self.__fundamental_vars_used:
@@ -92,25 +94,28 @@ class BuckinghamPi:
 
         return vect
 
-    def add_variable(self, name: str, units: str, non_repeating=False):
+    def add_variable(self, name: str, dimensions: str, non_repeating=False):
         '''
         Add variables to use for the pi-theorem
         :param name: (string) name of the variable to be added
-        :param units: (string) expression of the independent physical variable expressed in terms of the k independent fundamental units.
+        :param dimensions: (string) expression of the independent physical variable expressed in terms of the k independent fundamental dimensions.
         :param non_repeating: (boolean) select a variable to belong to the non-repeating variables matrix. This will ensure that the selected variable
                                         only shows up in one dimensionless group.
         '''
-        expr =  self.__parse_expression(units)
-        self.__variables.update({name:expr})
-        var_idx = len(list(self.__variables.keys()))-1
-        self.__var_from_idx[var_idx]= name
-        self.__idx_from_var[name] = var_idx
-        if non_repeating and (self.__flagged_var['selected'] == False):
-            self.__flagged_var['var_name'] = name
-            self.__flagged_var['var_index'] = var_idx
-            self.__flagged_var['selected'] = True
-        elif non_repeating and (self.__flagged_var['selected'] == True):
-            raise Exception("you cannot select more than one variable at a time to be a non_repeating.")
+        if dimensions!="1":
+            expr =  self.__parse_expression(dimensions)
+            self.__variables.update({name:expr})
+            var_idx = len(list(self.__variables.keys()))-1
+            self.__var_from_idx[var_idx]= name
+            self.__idx_from_var[name] = var_idx
+            if non_repeating and (self.__flagged_var['selected'] == False):
+                self.__flagged_var['var_name'] = name
+                self.__flagged_var['var_index'] = var_idx
+                self.__flagged_var['selected'] = True
+            elif non_repeating and (self.__flagged_var['selected'] == True):
+                raise Exception("you cannot select more than one variable at a time to be a non_repeating.")
+        else:
+            self.__prefixed_dimensionless_terms.append(sp.symbols(name))
 
     def __create_M(self):
         self.num_variable = len(list(self.__variables.keys()))
@@ -242,6 +247,11 @@ class BuckinghamPi:
             self.__allpiterms.remove(dup)
         return duplicate
 
+    def __populate_prefixed_dimensionless_groups(self):
+        for num_set, pi_set in enumerate(self.__allpiterms):
+            for pre_fixed_dimensionless_group in self.__prefixed_dimensionless_terms:
+                self.__allpiterms[num_set].append(pre_fixed_dimensionless_group)
+
     def generate_pi_terms(self):
         '''
         Generates all the possible pi terms
@@ -255,6 +265,8 @@ class BuckinghamPi:
         self.__construct_symbolic_pi_terms()
 
         self.__rm_duplicated_powers()
+
+        self.__populate_prefixed_dimensionless_groups()
 
     @property
     def pi_terms(self):
