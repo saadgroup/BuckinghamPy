@@ -30,12 +30,12 @@ Using BuckinghamPy, we execute the following code:
 from buckinghampy import BuckinghamPi
 
 Example = BuckinghamPi()
-Example.add_variable(name='R', units='M/L^(3)')
-Example.add_variable(name='P', units='M*L^(2)/(T^3)', non_repeating=True)
-Example.add_variable(name='V', units='M/(T*L)')
-Example.add_variable(name='Q', units='L^(3)/T')
-Example.add_variable(name='E', units='L')
-Example.add_variable(name='G', units='1/T')
+Example.add_variable(name='R', dimensions='M/L^(3)')
+Example.add_variable(name='P', dimensions='M*L^(2)/(T^3)', non_repeating=True)
+Example.add_variable(name='V', dimensions='M/(T*L)')
+Example.add_variable(name='Q', dimensions='L^(3)/T')
+Example.add_variable(name='E', dimensions='L')
+Example.add_variable(name='G', dimensions='1/T')
 
 Example.generate_pi_terms()
 
