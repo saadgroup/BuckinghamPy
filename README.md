@@ -4,7 +4,11 @@
 
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/saadgroup/BuckinghamPy/master?filepath=examples.ipynb) (Script)
 
-Python code that implements the Buckingham-Pi theorem and return all sets of dimensionless groups
+Python code that implements the Buckingham-Pi theorem and return all sets of dimensionless groups.
+
+The methodology is discussed in the original artictle: https://www.sciencedirect.com/science/article/pii/S2352711021001291
+
+Cite as: Karam, M., & Saad, T. (2021). BuckinghamPy: A Python software for dimensional analysis. SoftwareX, 16, 100851.
 
 ## Installation
 ---
