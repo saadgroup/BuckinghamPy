@@ -287,9 +287,7 @@ class BuckinghamPi:
             display(Math(latex_str))
             display(Markdown('---'))
 
-    def __tabulate_print(self,latex_string=False):
-        ''' print the dimensionless sets in a tabulated format'''
-
+    def __get_latex_form(self,latex_string=False):
         latex_form = []
         for pi_set in self.__allpiterms:
             latex_set = []
@@ -312,7 +310,11 @@ class BuckinghamPi:
         for num, set in enumerate(latex_form):
             set.insert(0, num + 1)
 
-        print(tabulate(latex_form, headers=headers))
+        return latex_form
+
+    def __tabulate_print(self,latex_string=False):
+        ''' print the dimensionless sets in a tabulated format'''
+        print(tabulate(self.__get_latex_form(latex_string), headers=headers))
 
     def print_all(self, latex_string=False):
         '''
@@ -327,3 +329,7 @@ class BuckinghamPi:
         except:
             ''' print the dimensionless sets in a tabulated format when in terminal session'''
             self.__tabulate_print(latex_string)
+
+    def return_all(self,latex_string=False):
+        ''' return all of the latex output in a dict for easier downstream processing '''
+        return self.__get_latex_form(latex_string) 
