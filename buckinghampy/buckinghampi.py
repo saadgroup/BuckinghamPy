@@ -244,7 +244,8 @@ class BuckinghamPi:
 
         # remove duplicates from the main dict of all pi terms
         for dup in duplicate:
-            self.__allpiterms.remove(dup)
+            if dup in self.__allpiterms:
+                self.__allpiterms.remove(dup)
         return duplicate
 
     def __populate_prefixed_dimensionless_groups(self):
