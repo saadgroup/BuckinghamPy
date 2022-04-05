@@ -1,8 +1,13 @@
 # BuckinghamPy
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/saadgroup/BuckinghamPy/master?filepath=buckinghampy-gui.ipynb) (GUI App)
+ <a href="https://saadgroup.a2hosted.com/bham"> 
+  <img src="app-logo.png" alt="drawing" width="200"/>
+ </a> (Launch GUI App)
+ 
+ <br>
+ <br>
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/saadgroup/BuckinghamPy/master?filepath=examples.ipynb) (Script)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/saadgroup/BuckinghamPy/master?filepath=examples.ipynb) (Jupyter Notebook Examples)
 
 Python code that implements the Buckingham-Pi theorem and return all sets of dimensionless groups.
 
