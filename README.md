@@ -1,5 +1,6 @@
 # BuckinghamPy
 
+ ## Use our new web app!
  <a href="https://saadgroup.a2hosted.com/bham"> 
   <img src="app-logo.png" alt="drawing" width="200"/>
  </a> (Launch GUI App)
@@ -7,9 +8,11 @@
  <br>
  <br>
 
+You can calso use the deprecated GUI interface via binder
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/saadgroup/BuckinghamPy/master?filepath=examples.ipynb) (Jupyter Notebook Examples)
 
-Python code that implements the Buckingham-Pi theorem and return all sets of dimensionless groups.
+## Description
+BuckinghamPy is a Python code that implements the Buckingham-Pi theorem and returns all possible sets of dimensionless groups.
 
 The methodology is discussed in the original artictle: https://www.sciencedirect.com/science/article/pii/S2352711021001291
 
@@ -21,7 +24,7 @@ Clone the package from the github repository into the current directory
 ```buildoutcfg
 git clone https://github.com/saadgroup/BuckinghamPy.git . 
 ```
-Use `pip` tool to install the package in the active python evironment
+Use the `pip` tool to install the package in the active python evironment
 ```buildoutcfg
 pip install .
 ```
