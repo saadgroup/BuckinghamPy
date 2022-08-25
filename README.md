@@ -5,8 +5,10 @@
   <img src="app-logo.png" alt="drawing" width="200"/>
  </a> (Launch GUI App)
  
- <br>
- <br>
+[Watch the youtube video](https://youtu.be/WGoOQh2MPHI)
+
+<br>
+<br>
 
 You can calso use the deprecated GUI interface via binder
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/saadgroup/BuckinghamPy/master?filepath=examples.ipynb) (Jupyter Notebook Examples)
