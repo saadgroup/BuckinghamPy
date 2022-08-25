@@ -24,11 +24,11 @@ Cite as: Karam, M., & Saad, T. (2021). BuckinghamPy: A Python software for dimen
 ---
 Clone the package from the github repository into the current directory
 ```buildoutcfg
-git clone https://github.com/saadgroup/BuckinghamPy.git . 
+git clone https://github.com/saadgroup/BuckinghamPy.git BuckinghamPy
 ```
-Use the `pip` tool to install the package in the active python evironment
+Use `pip` to install the package in the active python evironment
 ```buildoutcfg
-pip install .
+pip install BuckinghamPy
 ```
 ## Example
 
