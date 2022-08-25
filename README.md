@@ -26,10 +26,15 @@ Clone the package from the github repository into the current directory
 ```buildoutcfg
 git clone https://github.com/saadgroup/BuckinghamPy.git BuckinghamPy
 ```
+Now change directory to the git repo
+```buildoutcfg
+cd BuckinghamPy
+```
 Use `pip` to install the package in the active python evironment
 ```buildoutcfg
-pip install BuckinghamPy
+pip install .
 ```
+Note that last two steps - you must change directories to the repo directory and call `pip` from within it.
 ## Example
 
 Consider a fluid with density R and viscosity V, pumped in a centrifugal pump with power input P, a volume flow rate Q, an impeller diameter E, and a rotational rate G.
