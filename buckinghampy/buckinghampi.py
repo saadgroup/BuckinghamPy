@@ -10,12 +10,15 @@ __maintainer__ = "Mokbel Karam"
 __email__ = "karammokbel@gmail.com"
 __status__ = "Production"
 
-import sympy as sp
-from sympy.parsing.sympy_parser import parse_expr
-from sympy.core.mul import Mul, Pow
-from sympy.core.expr import Expr
+import multiprocessing
+from concurrent.futures import ProcessPoolExecutor, Future
+from itertools import combinations, permutations, chain
+
 import numpy as np
-from itertools import combinations,permutations
+import sympy as sp
+from sympy.core.expr import Expr
+from sympy.core.mul import Mul, Pow
+from sympy.parsing.sympy_parser import parse_expr
 from tabulate import tabulate
 
 try:
@@ -23,22 +26,57 @@ try:
 except:
     pass
 
+
+def find_duplicates(pi_set, other) -> list:
+    duplicate = []
+    permutations_sets = permutations(pi_set)
+    for p_set in permutations_sets:
+        # create a permutation vector from the permutation set
+        p_V = sp.Matrix(list(p_set))
+        # create a vector from the other set of dimensionless groups that we are comparing to.
+        o_V = sp.Matrix(other)
+        # create an element wise inverse of the vector of dimensionless groups
+        o_V_inv = o_V.applyfunc(lambda x: x ** (-1))
+
+        result = sp.matrix_multiply_elementwise(p_V, o_V)
+        # obtain the index of numerical value in the result vector.
+        # numerical values indicates that one dimensionless group is the inverse of the other group
+        # in this algorithm the numerical value will be equal to 1 (this is a result of the nullspace function in sympy)
+        idx_num_result = [x for x in range(len(p_set)) if isinstance(result[x, 0], sp.Number)]
+        # also repeat the multiplication with the inverse vector
+        result_inv = sp.matrix_multiply_elementwise(p_V, o_V_inv)
+        # check for the index of the numerical values in the result vector
+        idx_num_result_inv = [x for x in range(len(p_set)) if isinstance(result_inv[x, 0], sp.Number)]
+        # concatinate the indices into one list
+        all_indices = idx_num_result + idx_num_result_inv
+        # compare if the two vector are duplicates
+        if set(all_indices) == set(list(range(len(p_set)))):
+            duplicate.append(pi_set)
+
+    return duplicate
+
+
 class BuckinghamPi:
-    def __init__(self):
+    def __init__(self, n_jobs: int = 1):
         '''
         Construct an instance of the BuckinghamPi theorem
         '''
-        self.__var_from_idx={}
+        self.__var_from_idx = {}
         self.__idx_from_var = {}
-        self.__variables={}
-        self.__sym_variables={}
-        self.__flagged_var = {'var_name':None, 'var_index':None,'selected':False}
+        self.__variables = {}
+        self.__sym_variables = {}
+        self.__flagged_var = {'var_name': None, 'var_index': None, 'selected': False}
 
         self.__null_spaces = []
 
-        self.__fundamental_vars_used = [] # list of fundamental variables being used
+        self.__fundamental_vars_used = []  # list of fundamental variables being used
 
         self.__prefixed_dimensionless_terms = []
+
+        if (n_jobs == -1) or (n_jobs is None):
+            self.n_jobs = multiprocessing.cpu_count()
+        else:
+            self.n_jobs = n_jobs
 
     @property
     def fundamental_variables(self):
@@ -54,20 +92,23 @@ class BuckinghamPi:
         '''
         return self.__variables
 
-
-    def __parse_expression(self,string:str):
+    def __parse_expression(self, string: str):
         if '^' in string:
             # convert the xor operator to power operator
-            string = string.replace('^','**')
+            string = string.replace('^', '**')
 
         expr = parse_expr(string.lower())
 
-        if not (isinstance(expr,Mul) or isinstance(expr,Pow) or isinstance(expr,sp.Symbol)):
-            raise Exception('expression of type {} is not of the accepted types ({}, {}, {})'.format(type(expr), Mul, Pow, sp.Symbol))
+        if not (isinstance(expr, Mul) or isinstance(expr, Pow) or isinstance(expr, sp.Symbol)):
+            raise Exception(
+                'expression of type {} is not of the accepted types ({}, {}, {})'.format(type(expr), Mul, Pow,
+                                                                                         sp.Symbol))
         if expr.as_coeff_Mul()[0] != 1:
-            raise Exception('cannot have coefficients, {}, that multiply the expression {}'.format(expr.as_coeff_Mul()[0],expr.as_coeff_Mul()[1]))
+            raise Exception(
+                'cannot have coefficients, {}, that multiply the expression {}'.format(expr.as_coeff_Mul()[0],
+                                                                                       expr.as_coeff_Mul()[1]))
 
-        #extract the physical dimensions from the dimensions expressions
+        # extract the physical dimensions from the dimensions expressions
         used_symbols = list(expr.free_symbols)
         for sym in used_symbols:
             if not sym in self.__fundamental_vars_used:
@@ -75,7 +116,7 @@ class BuckinghamPi:
 
         return expr
 
-    def __extract_exponents(self,expr:Expr):
+    def __extract_exponents(self, expr: Expr):
         num_physical_dimensions = len(self.__fundamental_vars_used)
         vect = np.zeros(num_physical_dimensions)
         args = list(expr.args) if list(expr.args) else [expr]
@@ -85,10 +126,10 @@ class BuckinghamPi:
         else:
             for e in args:
                 if isinstance(expr, sp.Symbol):
-                    vect[self.__fundamental_vars_used.index(e)]= int(1)
+                    vect[self.__fundamental_vars_used.index(e)] = int(1)
                     # print('({}, {})'.format(e, 1))
                 else:
-                    var, exponent= e.as_base_exp()
+                    var, exponent = e.as_base_exp()
                     vect[self.__fundamental_vars_used.index(var)] = int(exponent)
                     # print('({}, {})'.format(var, exponent))
 
@@ -102,11 +143,11 @@ class BuckinghamPi:
         :param non_repeating: (boolean) select a variable to belong to the non-repeating variables matrix. This will ensure that the selected variable
                                         only shows up in one dimensionless group.
         '''
-        if dimensions!="1":
-            expr =  self.__parse_expression(dimensions)
-            self.__variables.update({name:expr})
-            var_idx = len(list(self.__variables.keys()))-1
-            self.__var_from_idx[var_idx]= name
+        if dimensions != "1":
+            expr = self.__parse_expression(dimensions)
+            self.__variables.update({name: expr})
+            var_idx = len(list(self.__variables.keys())) - 1
+            self.__var_from_idx[var_idx] = name
             self.__idx_from_var[name] = var_idx
             if non_repeating and (self.__flagged_var['selected'] == False):
                 self.__flagged_var['var_name'] = name
@@ -138,7 +179,7 @@ class BuckinghamPi:
             self.__sym_variables[var_name] = sp.symbols(var_name)
 
     def __solve_null_spaces(self):
-        if self.__flagged_var['selected']==True:
+        if self.__flagged_var['selected'] == True:
             self.__solve_null_spaces_for_flagged_variables()
 
         else:
@@ -151,7 +192,7 @@ class BuckinghamPi:
 
     def __solve_null_spaces_for_flagged_variables(self):
 
-        assert self.__flagged_var['selected']==True, " you need to select a variable to be explicit"
+        assert self.__flagged_var['selected'] == True, " you need to select a variable to be explicit"
 
         n = self.num_variable
         m = len(self.__fundamental_vars_used)
@@ -162,30 +203,30 @@ class BuckinghamPi:
             del all_idx[self.__flagged_var['var_index']]
 
         # print(all_idx)
-        all_combs = list(combinations(all_idx,m))
+        all_combs = list(combinations(all_idx, m))
         # print(all_combs)
 
         num_det_0 = 0
         for comb in all_combs:
             temp_comb = list(comb).copy()
-            extra_vars = [i for i in original_indicies if i not in temp_comb ]
+            extra_vars = [i for i in original_indicies if i not in temp_comb]
             b_ns = []
             for extra_var in extra_vars:
                 new_order = {}
                 temp_comb.append(extra_var)
-                A = self.M[:,temp_comb].copy()
-                for num,var_idx in enumerate(temp_comb):
-                    new_order[num] =  self.__var_from_idx[var_idx]
+                A = self.M[:, temp_comb].copy()
+                for num, var_idx in enumerate(temp_comb):
+                    new_order[num] = self.__var_from_idx[var_idx]
                 B = sp.Matrix(A)
-                test_mat = B[:,:m]
-                if sp.det(test_mat) !=0:
+                test_mat = B[:, :m]
+                if sp.det(test_mat) != 0:
                     ns = B.nullspace()[0]
                     b_ns.append({'order': new_order, 'power': ns.tolist()})
 
                 else:
-                    num_det_0+=1
+                    num_det_0 += 1
                 temp_comb = list(comb).copy()
-            if b_ns: # if b_ns is not empty add it to the nullspaces list
+            if b_ns:  # if b_ns is not empty add it to the nullspaces list
                 self.__null_spaces.append(b_ns)
         # print("num of det 0 : ",num_det_0)
 
@@ -196,7 +237,7 @@ class BuckinghamPi:
             for term in space:
                 expr = 1
                 idx = 0
-                for order,power in zip(term['order'].keys(),term['power']):
+                for order, power in zip(term['order'].keys(), term['power']):
                     expr *= self.__sym_variables[term['order'][order]] ** sp.nsimplify(sp.Rational(power[0]))
                     idx += 1
                 spacepiterms.append(expr)
@@ -213,34 +254,18 @@ class BuckinghamPi:
         # this algorithm rely on the fact that the nullspace function
         # in sympy set one free variable to 1 and the all other to zero
         # then solve the system by back substitution.
-        duplicate = []
+        duplicate_futures: list[Future] = []
         dummy_other_terms = self.__allpiterms.copy()
-        for num_set, pi_set in enumerate(self.__allpiterms):
-            dummy_other_terms.remove(pi_set)
-            for num_other, other in enumerate(dummy_other_terms):
-                permutations_sets = permutations(pi_set)
-                for p_set in permutations_sets:
-                    # create a permutation vector from the permutation set
-                    p_V = sp.Matrix(list(p_set))
-                    # create a vector from the other set of dimensionless groups that we are comparing to.
-                    o_V = sp.Matrix(other)
-                    # create an element wise inverse of the vector of dimensionless groups
-                    o_V_inv = o_V.applyfunc(lambda x:x**(-1))
 
-                    result = sp.matrix_multiply_elementwise(p_V, o_V)
-                    # obtain the index of numerical value in the result vector.
-                    # numerical values indicates that one dimensionless group is the inverse of the other group
-                    # in this algorithm the numerical value will be equal to 1 (this is a result of the nullspace function in sympy)
-                    idx_num_result = [x for x in range(len(p_set)) if isinstance(result[x,0],sp.Number)]
-                    # also repeat the multiplication with the inverse vector
-                    result_inv = sp.matrix_multiply_elementwise(p_V, o_V_inv)
-                    # check for the index of the numerical values in the result vector
-                    idx_num_result_inv = [x for x in range(len(p_set)) if isinstance(result_inv[x,0],sp.Number)]
-                    # concatinate the indices into one list
-                    all_indices = idx_num_result + idx_num_result_inv
-                    # compare if the two vector are duplicates
-                    if set(all_indices) == set(list(range(len(p_set)))):
-                        duplicate.append(pi_set)
+        with ProcessPoolExecutor(max_workers=self.n_jobs) as e:
+            for num_set, pi_set in enumerate(self.__allpiterms):
+                dummy_other_terms.remove(pi_set)
+                for num_other, other in enumerate(dummy_other_terms):
+                    future = e.submit(find_duplicates, pi_set=pi_set, other=other)
+                    duplicate_futures.append(future)
+
+        # Gather results from parallel execution
+        duplicate = chain.from_iterable((f.result() for f in duplicate_futures))
 
         # remove duplicates from the main dict of all pi terms
         for dup in duplicate:
@@ -276,19 +301,18 @@ class BuckinghamPi:
         '''
         return self.__allpiterms
 
-
     def __Jupyter_print(self):
         ''' print the rendered Latex format in Jupyter cell'''
         for set_num, space in enumerate(self.__allpiterms):
-            latex_str= '\\text{Set }'
-            latex_str+='{}: \\quad'.format(set_num+1)
+            latex_str = '\\text{Set }'
+            latex_str += '{}: \\quad'.format(set_num + 1)
             for num, term in enumerate(space):
-                latex_str += '\\pi_{} = '.format(num+1)+sp.latex(term)
+                latex_str += '\\pi_{} = '.format(num + 1) + sp.latex(term)
                 latex_str += '\\quad'
             display(Math(latex_str))
             display(Markdown('---'))
 
-    def __tabulate_print(self,latex_string=False):
+    def __tabulate_print(self, latex_string=False):
         ''' print the dimensionless sets in a tabulated format'''
 
         latex_form = []
