@@ -40,6 +40,8 @@ class BuckinghamPi:
 
         self.__prefixed_dimensionless_terms = []
 
+        self.__flagged_var_max_sets = 20
+
     @property
     def fundamental_variables(self):
         '''
@@ -162,7 +164,7 @@ class BuckinghamPi:
             del all_idx[self.__flagged_var['var_index']]
 
         # print(all_idx)
-        all_combs = list(combinations(all_idx,m))
+        all_combs = list(combinations(all_idx,m))[:self.__flagged_var_max_sets]
         # print(all_combs)
 
         num_det_0 = 0
