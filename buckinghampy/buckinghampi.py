@@ -61,14 +61,14 @@ def find_duplicates(pi_set, other) -> list:
 
 class BuckinghamPi:
     def __init__(self, n_jobs: int = 1):
-        '''
+        """
         Construct an instance of the BuckinghamPi theorem
-        '''
+        """
         self.__var_from_idx = {}
         self.__idx_from_var = {}
         self.__variables = {}
         self.__sym_variables = {}
-        self.__flagged_var = {'var_name': None, 'var_index': None, 'selected': False}
+        self.__flagged_var = {"var_name": None, "var_index": None, "selected": False}
 
         self.__null_spaces = []
 
@@ -83,33 +83,37 @@ class BuckinghamPi:
 
     @property
     def fundamental_variables(self):
-        '''
+        """
         :return: a list of the fundamental variables being used
-        '''
+        """
         return self.__fundamental_vars_used
 
     @property
     def variables(self):
-        '''
+        """
         :return: a dict of the variables added by the user.
-        '''
+        """
         return self.__variables
 
     def __parse_expression(self, string: str):
-        if '^' in string:
+        if "^" in string:
             # convert the xor operator to power operator
-            string = string.replace('^', '**')
+            string = string.replace("^", "**")
 
         expr = parse_expr(string.lower())
 
         if not (isinstance(expr, Mul) or isinstance(expr, Pow) or isinstance(expr, sp.Symbol)):
             raise Exception(
-                'expression of type {} is not of the accepted types ({}, {}, {})'.format(type(expr), Mul, Pow,
-                                                                                         sp.Symbol))
+                "expression of type {} is not of the accepted types ({}, {}, {})".format(
+                    type(expr), Mul, Pow, sp.Symbol
+                )
+            )
         if expr.as_coeff_Mul()[0] != 1:
             raise Exception(
-                'cannot have coefficients, {}, that multiply the expression {}'.format(expr.as_coeff_Mul()[0],
-                                                                                       expr.as_coeff_Mul()[1]))
+                "cannot have coefficients, {}, that multiply the expression {}".format(
+                    expr.as_coeff_Mul()[0], expr.as_coeff_Mul()[1]
+                )
+            )
 
         # extract the physical dimensions from the dimensions expressions
         used_symbols = list(expr.free_symbols)
@@ -139,24 +143,24 @@ class BuckinghamPi:
         return vect
 
     def add_variable(self, name: str, dimensions: str, non_repeating=False):
-        '''
+        """
         Add variables to use for the pi-theorem
         :param name: (string) name of the variable to be added
         :param dimensions: (string) expression of the independent physical variable expressed in terms of the k independent fundamental dimensions.
         :param non_repeating: (boolean) select a variable to belong to the non-repeating variables matrix. This will ensure that the selected variable
                                         only shows up in one dimensionless group.
-        '''
+        """
         if dimensions != "1":
             expr = self.__parse_expression(dimensions)
             self.__variables.update({name: expr})
             var_idx = len(list(self.__variables.keys())) - 1
             self.__var_from_idx[var_idx] = name
             self.__idx_from_var[name] = var_idx
-            if non_repeating and (self.__flagged_var['selected'] == False):
-                self.__flagged_var['var_name'] = name
-                self.__flagged_var['var_index'] = var_idx
-                self.__flagged_var['selected'] = True
-            elif non_repeating and (self.__flagged_var['selected'] == True):
+            if non_repeating and (self.__flagged_var["selected"] == False):
+                self.__flagged_var["var_name"] = name
+                self.__flagged_var["var_index"] = var_idx
+                self.__flagged_var["selected"] = True
+            elif non_repeating and (self.__flagged_var["selected"] == True):
                 raise Exception("you cannot select more than one variable at a time to be a non_repeating.")
         else:
             self.__prefixed_dimensionless_terms.append(sp.symbols(name))
@@ -166,7 +170,7 @@ class BuckinghamPi:
         self.num_variable = len(list(self.__variables.keys()))
         num_physical_dimensions = len(self.__fundamental_vars_used)
         if self.num_variable <= num_physical_dimensions:
-            raise Exception('The number of variables has to be greater than the number of physical dimensions.')
+            raise Exception("The number of variables has to be greater than the number of physical dimensions.")
 
         self.M = np.zeros(shape=(self.num_variable, num_physical_dimensions))
         # fill M
@@ -185,28 +189,28 @@ class BuckinghamPi:
 
     def __solve_null_spaces(self):
         logger.info("Solving null spaces")
-        if self.__flagged_var['selected'] == True:
+        if self.__flagged_var["selected"] == True:
             self.__solve_null_spaces_for_flagged_variables()
 
         else:
             for idx in self.__var_from_idx.keys():
-                self.__flagged_var['var_name'] = self.__var_from_idx[idx]
-                self.__flagged_var['var_index'] = idx
-                self.__flagged_var['selected'] = True
+                self.__flagged_var["var_name"] = self.__var_from_idx[idx]
+                self.__flagged_var["var_index"] = idx
+                self.__flagged_var["selected"] = True
 
                 self.__solve_null_spaces_for_flagged_variables()
 
     def __solve_null_spaces_for_flagged_variables(self):
 
-        assert self.__flagged_var['selected'] == True, " you need to select a variable to be explicit"
+        assert self.__flagged_var["selected"] == True, " you need to select a variable to be explicit"
 
         n = self.num_variable
         m = len(self.__fundamental_vars_used)
 
         original_indicies = list(range(0, n))
         all_idx = original_indicies.copy()
-        if self.__flagged_var['selected']:
-            del all_idx[self.__flagged_var['var_index']]
+        if self.__flagged_var["selected"]:
+            del all_idx[self.__flagged_var["var_index"]]
 
         # print(all_idx)
         all_combs = list(combinations(all_idx, m))
@@ -227,7 +231,7 @@ class BuckinghamPi:
                 test_mat = B[:, :m]
                 if sp.det(test_mat) != 0:
                     ns = B.nullspace()[0]
-                    b_ns.append({'order': new_order, 'power': ns.tolist()})
+                    b_ns.append({"order": new_order, "power": ns.tolist()})
 
                 else:
                     num_det_0 += 1
@@ -244,8 +248,8 @@ class BuckinghamPi:
             for term in space:
                 expr = 1
                 idx = 0
-                for order, power in zip(term['order'].keys(), term['power']):
-                    expr *= self.__sym_variables[term['order'][order]] ** sp.nsimplify(sp.Rational(power[0]))
+                for order, power in zip(term["order"].keys(), term["power"]):
+                    expr *= self.__sym_variables[term["order"][order]] ** sp.nsimplify(sp.Rational(power[0]))
                     idx += 1
                 spacepiterms.append(expr)
             # check for already existing pi terms in previous null-spaces
@@ -276,7 +280,7 @@ class BuckinghamPi:
             futures = e.map(
                 find_duplicates,
                 *zip(*duplicate_inputs),
-                chunksize=max(1, len(duplicate_inputs) // self.n_jobs)
+                chunksize=max(1, len(duplicate_inputs) // self.n_jobs),
             )
             # duplicate = list(tqdm.tqdm(futures, total=len(duplicate_inputs)))
             duplicate = list(futures)
@@ -293,9 +297,9 @@ class BuckinghamPi:
                 self.__allpiterms[num_set].append(pre_fixed_dimensionless_group)
 
     def generate_pi_terms(self):
-        '''
+        """
         Generates all the possible pi terms
-        '''
+        """
         self.__create_M()
 
         self.__create_symbolic_variables()
@@ -311,24 +315,24 @@ class BuckinghamPi:
 
     @property
     def pi_terms(self):
-        '''
+        """
         :return: a list with all the symbolic dimensionless terms for all permutation of the dimensional Matrix M
-        '''
+        """
         return self.__allpiterms
 
     def __Jupyter_print(self):
-        ''' print the rendered Latex format in Jupyter cell'''
+        """print the rendered Latex format in Jupyter cell"""
         for set_num, space in enumerate(self.__allpiterms):
-            latex_str = '\\text{Set }'
-            latex_str += '{}: \\quad'.format(set_num + 1)
+            latex_str = "\\text{Set }"
+            latex_str += "{}: \\quad".format(set_num + 1)
             for num, term in enumerate(space):
-                latex_str += '\\pi_{} = '.format(num + 1) + sp.latex(term)
-                latex_str += '\\quad'
+                latex_str += "\\pi_{} = ".format(num + 1) + sp.latex(term)
+                latex_str += "\\quad"
             display(Math(latex_str))
-            display(Markdown('---'))
+            display(Markdown("---"))
 
     def __tabulate_print(self, latex_string=False):
-        ''' print the dimensionless sets in a tabulated format'''
+        """print the dimensionless sets in a tabulated format"""
 
         latex_form = []
         for pi_set in self.__allpiterms:
@@ -345,9 +349,9 @@ class BuckinghamPi:
 
         num_of_pi_terms = len(latex_form[0])
 
-        headers = ['sets']
+        headers = ["sets"]
         for num in range(num_of_pi_terms):
-            headers.append('Pi {}'.format(num + 1))
+            headers.append("Pi {}".format(num + 1))
 
         for num, set in enumerate(latex_form):
             set.insert(0, num + 1)
@@ -355,15 +359,15 @@ class BuckinghamPi:
         print(tabulate(latex_form, headers=headers))
 
     def print_all(self, latex_string=False):
-        '''
+        """
         print all the sets of dimensionless groups in latex or symbolic form.
         :latex_string: optional boolean. If set to True the function will print the latex string of the
                         dimensionless groups. if set to False the function will print the symbolic form of the
                         dimensionless groups.
-        '''
+        """
         try:
-            ''' Try to render the latex in Jupyter cell'''
+            """Try to render the latex in Jupyter cell"""
             self.__Jupyter_print()
         except:
-            ''' print the dimensionless sets in a tabulated format when in terminal session'''
+            """print the dimensionless sets in a tabulated format when in terminal session"""
             self.__tabulate_print(latex_string)
