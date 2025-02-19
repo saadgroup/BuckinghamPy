@@ -10,9 +10,10 @@ __maintainer__ = "Mokbel Karam"
 __email__ = "karammokbel@gmail.com"
 __status__ = "Production"
 
+import concurrent.futures
+import logging
 import multiprocessing
-from concurrent.futures import ProcessPoolExecutor, Future
-from itertools import combinations, permutations, chain
+from itertools import combinations, permutations
 
 import numpy as np
 import sympy as sp
@@ -25,6 +26,8 @@ try:
     from IPython.display import display, clear_output, Math, Markdown
 except:
     pass
+
+logger = logging.getLogger("buckinghampy")
 
 
 def find_duplicates(pi_set, other) -> list:
@@ -159,6 +162,7 @@ class BuckinghamPi:
             self.__prefixed_dimensionless_terms.append(sp.symbols(name))
 
     def __create_M(self):
+        logger.info("Creating M matrix")
         self.num_variable = len(list(self.__variables.keys()))
         num_physical_dimensions = len(self.__fundamental_vars_used)
         if self.num_variable <= num_physical_dimensions:
@@ -175,10 +179,12 @@ class BuckinghamPi:
         self.M = self.M.transpose()
 
     def __create_symbolic_variables(self):
+        logger.info("Creating symbolic variables")
         for var_name in self.__variables.keys():
             self.__sym_variables[var_name] = sp.symbols(var_name)
 
     def __solve_null_spaces(self):
+        logger.info("Solving null spaces")
         if self.__flagged_var['selected'] == True:
             self.__solve_null_spaces_for_flagged_variables()
 
@@ -231,6 +237,7 @@ class BuckinghamPi:
         # print("num of det 0 : ",num_det_0)
 
     def __construct_symbolic_pi_terms(self):
+        logger.info("Constructing symbolic pi terms")
         self.__allpiterms = []
         for space in self.__null_spaces:
             spacepiterms = []
@@ -254,18 +261,25 @@ class BuckinghamPi:
         # this algorithm rely on the fact that the nullspace function
         # in sympy set one free variable to 1 and the all other to zero
         # then solve the system by back substitution.
-        duplicate_futures: list[Future] = []
         dummy_other_terms = self.__allpiterms.copy()
 
-        with ProcessPoolExecutor(max_workers=self.n_jobs) as e:
-            for num_set, pi_set in enumerate(self.__allpiterms):
-                dummy_other_terms.remove(pi_set)
-                for num_other, other in enumerate(dummy_other_terms):
-                    future = e.submit(find_duplicates, pi_set=pi_set, other=other)
-                    duplicate_futures.append(future)
+        # Build list of inputs to be processed
+        duplicate_inputs = []
+        for _, pi_set in enumerate(self.__allpiterms):
+            dummy_other_terms.remove(pi_set)
+            for _, other in enumerate(dummy_other_terms):
+                duplicate_inputs.append((pi_set, other))
 
-        # Gather results from parallel execution
-        duplicate = chain.from_iterable((f.result() for f in duplicate_futures))
+        # Process inputs in parallel
+        logger.info(f"Removing duplicated powers ({len(duplicate_inputs)} tests)")
+        with concurrent.futures.ProcessPoolExecutor(max_workers=self.n_jobs) as e:
+            futures = e.map(
+                find_duplicates,
+                *zip(*duplicate_inputs),
+                chunksize=max(1, len(duplicate_inputs) // self.n_jobs)
+            )
+            # duplicate = list(tqdm.tqdm(futures, total=len(duplicate_inputs)))
+            duplicate = list(futures)
 
         # remove duplicates from the main dict of all pi terms
         for dup in duplicate:
@@ -293,6 +307,7 @@ class BuckinghamPi:
         self.__rm_duplicated_powers()
 
         self.__populate_prefixed_dimensionless_groups()
+        logger.info("Done!")
 
     @property
     def pi_terms(self):
