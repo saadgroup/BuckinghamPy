@@ -70,6 +70,16 @@ GUI=BuckinghamPiGui()
 ```
 
 ---
+## Note
+
+In order to speed up the calculations, the maximum number of sets per non-repeating variable is set to `20`. 
+
+```
+self.__flagged_var_max_sets = 20
+```
+You could change this number to `-1` to get all the sets, `buckinghampy/buckinghampi.py line 43`.
+
+---
 ## See Also
 
 * [Documentation](https://htmlpreview.github.io/?https://github.com/saadgroup/BuckinghamPy/blob/master/doc/buckinghampi.m.html)
