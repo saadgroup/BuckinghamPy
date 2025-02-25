@@ -19,6 +19,7 @@ from itertools import combinations, permutations
 
 import numpy as np
 import sympy as sp
+import tqdm
 from sympy.core.expr import Expr
 from sympy.core.mul import Mul, Pow
 from sympy.parsing.sympy_parser import parse_expr
@@ -297,13 +298,15 @@ class BuckinghamPi:
         # Process inputs in parallel
         logger.info(f"Removing duplicated powers ({len(duplicate_inputs)} tests)")
         with concurrent.futures.ProcessPoolExecutor(max_workers=self.n_jobs) as e:
-            futures = e.map(
-                find_duplicates,
-                *zip(*duplicate_inputs),
-                chunksize=max(1, len(duplicate_inputs) // self.n_jobs),
-            )
-            # duplicate = list(tqdm.tqdm(futures, total=len(duplicate_inputs)))
-            duplicate = list(futures)
+            futures = [
+                e.submit(find_duplicates, pi_set, other)
+                for pi_set, other in duplicate_inputs
+            ]
+            duplicate = []
+            for future in tqdm.tqdm(
+                concurrent.futures.as_completed(futures), total=len(futures)
+            ):
+                duplicate.append(future.result())
 
         # remove duplicates from the main dict of all pi terms
         for dup in duplicate:
