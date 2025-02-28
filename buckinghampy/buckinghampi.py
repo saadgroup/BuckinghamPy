@@ -16,6 +16,7 @@ import concurrent.futures
 import logging
 import multiprocessing
 from itertools import combinations, permutations
+from typing import TypeAlias, List
 
 import numpy as np
 import sympy as sp
@@ -32,8 +33,13 @@ except:
 
 logger = logging.getLogger("buckinghampy")
 
+PiType: TypeAlias = sp.Expr
+PiSetType: TypeAlias = List[PiType]
 
-def find_duplicates(pi_set, other) -> list:
+
+def find_duplicates_worker(
+    pi_set: PiSetType, other: List[PiSetType]
+) -> List[PiSetType]:
     duplicate = []
     permutations_sets = permutations(pi_set)
     for p_set in permutations_sets:
@@ -128,6 +134,17 @@ class BuckinghamPi:
                 )
             )
 
+        # Make sure dimensions only contain integer exponents
+        # Technically this only checks for *any* rational number in the expression,
+        # but units should only be expressions made up of a dimension and an exponent, so implicitly this is fine.
+        has_non_int_exp = any(
+            [not a.is_Integer for a in expr.atoms() if not a.is_Symbol]
+        )
+        if has_non_int_exp:
+            raise ValueError(
+                f"Dimension {expr} contains non-integer exponent(s), which is not allowed."
+            )
+
         # extract the physical dimensions from the dimensions expressions
         used_symbols = list(expr.free_symbols)
         for sym in used_symbols:
@@ -165,6 +182,7 @@ class BuckinghamPi:
         """
         if dimensions != "1":
             expr = self.__parse_expression(dimensions)
+
             self.__variables.update({name: expr})
             var_idx = len(list(self.__variables.keys())) - 1
             self.__var_from_idx[var_idx] = name
@@ -283,30 +301,28 @@ class BuckinghamPi:
                 self.__allpiterms.append(spacepiterms)
 
     def __rm_duplicated_powers(self):
+        logger.info("Removing duplicated pi terms. This can take a looooong time.")
         # this algorithm rely on the fact that the nullspace function
         # in sympy set one free variable to 1 and the all other to zero
         # then solve the system by back substitution.
+        duplicate = []
         dummy_other_terms = self.__allpiterms.copy()
 
-        # Build list of inputs to be processed
-        duplicate_inputs = []
-        for _, pi_set in enumerate(self.__allpiterms):
-            dummy_other_terms.remove(pi_set)
-            for _, other in enumerate(dummy_other_terms):
-                duplicate_inputs.append((pi_set, other))
+        futures = []
+        with concurrent.futures.ProcessPoolExecutor(
+            max_workers=self.n_jobs
+        ) as executor:
+            for num_set, pi_set in enumerate(self.__allpiterms):
+                dummy_other_terms.remove(pi_set)
+                for num_other, other in enumerate(dummy_other_terms):
+                    futures.append(
+                        executor.submit(find_duplicates_worker, pi_set, other)
+                    )
 
-        # Process inputs in parallel
-        logger.info(f"Removing duplicated powers ({len(duplicate_inputs)} tests)")
-        with concurrent.futures.ProcessPoolExecutor(max_workers=self.n_jobs) as e:
-            futures = [
-                e.submit(find_duplicates, pi_set, other)
-                for pi_set, other in duplicate_inputs
-            ]
-            duplicate = []
             for future in tqdm.tqdm(
                 concurrent.futures.as_completed(futures), total=len(futures)
             ):
-                duplicate.append(future.result())
+                duplicate.extend(future.result())
 
         # remove duplicates from the main dict of all pi terms
         for dup in duplicate:
