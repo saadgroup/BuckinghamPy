@@ -304,7 +304,10 @@ class BuckinghamPi:
                     latex_set.append(pi)
             latex_form.append(latex_set)
 
-        num_of_pi_terms = len(latex_form[0])
+        n = self.num_variable
+        m = len(self.__fundamental_vars_used)
+
+        num_of_pi_terms = n - m
 
         headers = ['sets']
         for num in range(num_of_pi_terms):
