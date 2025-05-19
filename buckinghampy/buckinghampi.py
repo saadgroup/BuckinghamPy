@@ -304,12 +304,6 @@ class BuckinghamPi:
                     latex_set.append(pi)
             latex_form.append(latex_set)
 
-        num_of_pi_terms = len(latex_form[0])
-
-        headers = ['sets']
-        for num in range(num_of_pi_terms):
-            headers.append('Pi {}'.format(num + 1))
-
         for num, set in enumerate(latex_form):
             set.insert(0, num + 1)
 
@@ -317,7 +311,16 @@ class BuckinghamPi:
 
     def __tabulate_print(self,latex_string=False):
         ''' print the dimensionless sets in a tabulated format'''
-        print(tabulate(self.__get_latex_form(latex_string), headers=headers))
+        latex_sets = self.__get_latex_form(latex_string)
+        n = self.num_variable
+        m = len(self.__fundamental_vars_used)
+
+        num_of_pi_terms = n - m
+
+        headers = ['sets']
+        for num in range(num_of_pi_terms):
+            headers.append('Pi {}'.format(num + 1))
+        print(tabulate(latex_sets, headers=headers))
 
     def print_all(self, latex_string=False):
         '''
