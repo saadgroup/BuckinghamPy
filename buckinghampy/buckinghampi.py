@@ -163,11 +163,11 @@ class BuckinghamPi:
         if self.__flagged_var['selected']:
             del all_idx[self.__flagged_var['var_index']]
 
-        # print(all_idx)
         all_combs = list(combinations(all_idx,m))[:self.__flagged_var_max_sets]
-        # print(all_combs)
 
-        num_det_0 = 0
+        num_all_pi_terms = (n-m) * len(all_combs)
+
+        num_singular = 0
         for comb in all_combs:
             temp_comb = list(comb).copy()
             extra_vars = [i for i in original_indicies if i not in temp_comb ]
@@ -185,12 +185,14 @@ class BuckinghamPi:
                     b_ns.append({'order': new_order, 'power': ns.tolist()})
 
                 else:
-                    num_det_0+=1
+                    num_singular+=1
                 temp_comb = list(comb).copy()
             if b_ns: # if b_ns is not empty add it to the nullspaces list
                 self.__null_spaces.append(b_ns)
-        # print("num of det 0 : ",num_det_0)
 
+        if num_singular == num_all_pi_terms:
+            raise Exception("All the P matrices in the possible sets of dimensionless groups were singular, resulting in no pi terms.")
+        
     def __construct_symbolic_pi_terms(self):
         self.__allpiterms = []
         for space in self.__null_spaces:
@@ -258,6 +260,8 @@ class BuckinghamPi:
     def generate_pi_terms(self):
         '''
         Generates all the possible pi terms
+
+        Note: this function can throw exceptions
         '''
         self.__create_M()
 
