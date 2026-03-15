@@ -6,8 +6,8 @@ __copyright__ = "Copyright (c) 2021, Mokbel Karam"
 __credits__ = ["University of Utah Department of Chemical Engineering"]
 __license__ = "MIT"
 __version__ = "1.0.4"
-__maintainer__ = "Mokbel Karam"
-__email__ = "karammokbel@gmail.com"
+__maintainer__ = "Mokbel Karam and Tony Saad"
+__email__ = "saadtony@gmail.com"
 __status__ = "Production"
 
 import sympy as sp
